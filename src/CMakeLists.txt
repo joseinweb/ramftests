@@ -1,4 +1,4 @@
-set (TARGET "RAMTestApp")
+set (TARGET "ramtestapp")
 add_executable(${TARGET} main.cpp ThunderBridge.cpp)
 
 find_package(PkgConfig REQUIRED)

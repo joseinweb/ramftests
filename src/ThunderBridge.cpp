@@ -4,7 +4,7 @@ using namespace std;
 
 #define comrpcPath "/tmp/communicator"
 const std::string appmgrCallsign = "org.rdk.AppManager";
-ThunderBridge::ThunderBridge() : appManager(nullptr), appManagerEventHandler(nullptr)
+ThunderBridge::ThunderBridge() : mAppManager(nullptr), mAppManagerEventHandler(nullptr)
 {
 }
 ThunderBridge::~ThunderBridge()
