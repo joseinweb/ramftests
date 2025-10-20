@@ -1,5 +1,7 @@
 set (TARGET "ramtestapp")
-add_executable(${TARGET} main.cpp ThunderBridge.cpp)
+add_executable(${TARGET} main.cpp 
+    AppMgrControl.cpp 
+    ThunderBridge.cpp)
 
 find_package(PkgConfig REQUIRED)
 
@@ -26,6 +28,7 @@ set(COMMON_LIBRARIES
     ${WPEFRAMEWORKWEBSOCKET_LIBRARIES}
     ${WPEFRAMEWORKDEFINITIONS_LIBRARIES}
     ${WPEFRAMEWORKPLUGINS_LIBRARIES}
+    jsoncpp
     )
 
 include(GNUInstallDirs)

@@ -1,14 +1,8 @@
 #pragma once
+#include "common.hpp"
 
-#ifndef MODULE_NAME
-#define MODULE_NAME AppMgrsTest
-#endif
-
-#include <WPEFramework/com/com.h>
-#include <WPEFramework/core/core.h>
-#include "WPEFramework/interfaces/IAppManager.h"
 #include "WPEFramework/interfaces/IPackageManager.h"
-
+#include "AppMgrControl.hpp"
 using namespace WPEFramework;
 
 class ThunderBridge {
@@ -20,10 +14,10 @@ public:
     void connect();
     void deinitialize();
     void printPluginStatus(std::string pluginName) ;
+    void showAppManagerMenu();
 
 private:
 
-    Exchange::IAppManager *mAppManager;
     Core::ProxyType<RPC::CommunicatorClient> mClient;
-    std::shared_ptr<WPEFramework::Exchange::IAppManager::INotification> mAppManagerEventHandler;
+    unique_ptr<AppMgrControl> mAppMgrControl;
 };

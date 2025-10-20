@@ -3,9 +3,11 @@
 using namespace std;
 
 #define comrpcPath "/tmp/communicator"
-const std::string appmgrCallsign = "org.rdk.AppManager";
-ThunderBridge::ThunderBridge() : mAppManager(nullptr), mAppManagerEventHandler(nullptr)
+
+ThunderBridge::ThunderBridge()
 {
+
+    mAppMgrControl = std::unique_ptr<AppMgrControl>(new AppMgrControl());
 }
 ThunderBridge::~ThunderBridge()
 {
@@ -23,17 +25,15 @@ bool ThunderBridge::initialize()
 
     if (mClient.IsValid()) {
         cout << " Registered to Thunder" << endl;
-        mAppManager = mClient->Open<Exchange::IAppManager>(appmgrCallsign.c_str());
-        if (mAppManager == nullptr) {
-            std::cerr << "Failed to open IAppManager interface." << std::endl;
-            return false;
-        }
     } else {
         std::cerr << "Failed to create COMRPC client." << std::endl;
         return false;
     }
-
     cout << "ThunderBridge initialized." << endl;
+    if(!mAppMgrControl->initialize(mClient)) {
+        std::cerr << "Failed to initialize AppMgrControl." << std::endl;
+        return false;
+    }
     return true;
 }
 void ThunderBridge::connect()
@@ -49,4 +49,17 @@ void ThunderBridge::deinitialize()
 void ThunderBridge::printPluginStatus(std::string pluginName)
 {
     cout<<"Plugin Status for " << pluginName << ": ";
+    if(mAppMgrControl) {
+        mAppMgrControl->checkPluginStatus();
+    } else {
+        cout<<"AppMgrControl is not initialized."<<endl;
+    }
+}
+void ThunderBridge::showAppManagerMenu()
+{
+    if(mAppMgrControl) {
+        mAppMgrControl->displayAppManagerMenu();
+    } else {
+        cout<<"AppMgrControl is not initialized."<<endl;
+    }
 }

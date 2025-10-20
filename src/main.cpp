@@ -1,5 +1,8 @@
 #include <iostream>
+#include "ThunderBridge.hpp"
 using namespace std;
+
+ThunderBridge thunderBridge;
 
 void printMainMenu() {
     cout << "RDK App Managers Test Utility" << endl;
@@ -7,7 +10,7 @@ void printMainMenu() {
     cout << "1. Option 1 : Check RDK App managers status" << endl;
     cout << "2. Option 2 : Add Catalog url" << endl;
     cout << "3. Option 3 : List catalog applications" << endl;
-     cout << "4. Option 4: Show installed applications" << endl;
+    cout << "4: Option 4 : App Manager releated functions" << endl;
     cout << "5. Option 5 : Install application" << endl;
     cout << "6. Option 6 : Uninstall application" << endl;
     cout << "7. Option 7 : Update application" << endl;
@@ -25,7 +28,7 @@ int acceptUserInput() {
         switch (choice) {
             case 1:
                 cout << "Checking RDK App managers status..." << endl;
-                // Add logic to check RDK App managers status
+                thunderBridge.printPluginStatus("RDK App Manager");
                 break;
             case 2:
                 cout << "Adding Catalog url..." << endl;
@@ -36,8 +39,9 @@ int acceptUserInput() {
                 // Add logic to list catalog applications
                 break;
             case 4:
-                cout << "Showing installed applications..." << endl;
-                // Add logic to show installed applications
+                cout << "Moving to App Manager related functions..." << endl;
+                thunderBridge.showAppManagerMenu();
+                choice = -1; // Reset choice to avoid exiting
                 break;
             case 5:
                 cout << "Installing application..." << endl;
@@ -73,6 +77,8 @@ int acceptUserInput() {
     return 0;
 }
 int main() {
+    thunderBridge.initialize();
+    thunderBridge.connect();
     printMainMenu();
     acceptUserInput();
 
