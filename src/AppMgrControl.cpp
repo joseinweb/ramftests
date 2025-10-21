@@ -36,10 +36,31 @@ void AppMgrControl::displayAppManagerMenu()
     while (true)
     {
 
+        std::cout << "--------------------------" << std::endl;
         std::cout << "App Manager Menu:" << std::endl;
         std::cout << "0. Go back to main menu" << std::endl;
         std::cout << "1. List Installed Applications" << std::endl;
-        std::cout << "2. Other App Manager Functions" << std::endl;
+        std::cout << "2. Is App installed ? " << std::endl;
+        std::cout << "3. List Loaded apps" << std::endl;
+        std::cout << "4. Launch Application" << std::endl;
+        std::cout << "5. Preload Application" << std::endl;
+        std::cout << "6. Close Application" << std::endl;
+        std::cout << "7. Terminate Application" << std::endl;
+        std::cout << "8. Kill Application" << std::endl;
+        std::cout << "9. Start System app" << std::endl;
+        std::cout << "10. Stop System app" << std::endl;
+        std::cout << "11. Get Application State" << std::endl;
+        std::cout << "12. Send App Intent" << std::endl;
+        std::cout << "13. Clear application data" << std::endl;
+        std::cout << "14. Clear all application data" << std::endl;
+        std::cout << "15. Get application metadata" << std::endl;
+        std::cout << "16. Get application property" << std::endl;
+        std::cout << "17. Set application property" << std::endl;
+        std::cout << "18. Get Max running applications" << std::endl;
+        std::cout << "19. Get Max Hibernated applications" << std::endl;
+        std::cout << "20. Get Min Hibernated flash usage" << std::endl;
+        std::cout << "21. Get Max inactive RAM usage" << std::endl;
+        std::cout << "--------------------------" << std::endl;
         // Add more menu options as needed
 
         int choice;
@@ -53,14 +74,17 @@ void AppMgrControl::displayAppManagerMenu()
             listInstalledApplications();
             break;
         case 2:
-            std::cout << "Other App Manager Functions..." << std::endl;
-            // Add logic for other app manager functions
+            handleIsAppInstalledRequest();
+            break;
+        case 3:
+            handleLoadedAppsRequest();
             break;
         case 0:
-            std::cout << "Returning to main menu..." << std::endl;
-            return;
         default:
-            std::cout << "Invalid choice: " << choice << std::endl;
+            std::cout << "Returning to main menu..." << std::endl;
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            return;
         }
     }
 }
@@ -82,16 +106,113 @@ void AppMgrControl::listInstalledApplications()
     Json::CharReaderBuilder builder;
     Json::Value root;
     JSONCPP_STRING err;
-    
+
     const std::unique_ptr<Json::CharReader> reader(builder.newCharReader());
-    if(!reader->parse(apps.c_str(), apps.c_str() + apps.size(), &root, &err)) {
+    if (!reader->parse(apps.c_str(), apps.c_str() + apps.size(), &root, &err))
+    {
         std::cerr << "Failed to parse installed applications JSON: " << err << std::endl;
         return;
     }
     std::cout << "Installed Applications:" << std::endl;
-    for (const auto& app : root)
+    for (const auto &app : root)
     {
-        std::cout << " - " << app["appId"].asString() << " (Version: " << app["versionString"].asString() << ")" 
-        <<" Last active: " << app["lastActiveTime"].asString() << std::endl;
+        std::cout << " - " << app["appId"].asString() << " (Version: " << app["versionString"].asString() << ")"
+                  << " Last active: " << app["lastActiveTime"].asString() << std::endl;
     }
+}
+void AppMgrControl::handleIsAppInstalledRequest()
+{
+    if (appManager == nullptr)
+    {
+        std::cerr << "AppManager is not initialized." << std::endl;
+        return;
+    }
+
+    std::string appId;
+    std::cout << "Enter the App ID to check: ";
+    std::cin >> appId;
+
+    bool isInstalled = false;
+    uint32_t result = appManager->IsInstalled(appId, isInstalled);
+
+    if (result != Core::ERROR_NONE)
+    {
+        std::cerr << "Failed to check if app is installed." << std::endl;
+        return;
+    }
+    std::cout << appId << " is  ?" << (isInstalled ? "Installed" : "Not Installed") << std::endl;
+}
+void AppMgrControl::handleLoadedAppsRequest()
+{
+    if (appManager == nullptr)
+    {
+        std::cerr << "AppManager is not initialized." << std::endl;
+        return;
+    }
+    std::string loadedAppsJson;
+
+    uint32_t result = appManager->GetLoadedApps(loadedAppsJson);
+    if (result == Core::ERROR_NONE)
+    {
+        Json::CharReaderBuilder builder;
+        Json::Value root;
+        JSONCPP_STRING err;
+
+        const std::unique_ptr<Json::CharReader> reader(builder.newCharReader());
+        if (!reader->parse(loadedAppsJson.c_str(), loadedAppsJson.c_str() + loadedAppsJson.size(), &root, &err))
+        {
+            std::cerr << "Failed to parse loaded applications JSON: " << err << std::endl;
+            return;
+        }
+
+        std::cout << "Loaded Applications:" << std::endl;
+        for (const auto &app : root)
+        {
+            std::cout << " - " << app["appId"].asString() << " (appInstanceId: " << app["appInstanceId"].asString() << ")"
+                      << " activeSessionId: " << app["activeSessionId"].asString() << " Current state: " <<
+                      mapLifeCycleStateToString(static_cast<Exchange::IAppManager::AppLifecycleState>(app["currentLifecycleState"].asInt())) << std::endl;
+        }
+    }
+    else
+    {
+        std::cerr << "Failed to retrieve loaded applications." << std::endl;
+    }
+}
+std::string AppMgrControl::mapLifeCycleStateToString(Exchange::IAppManager::AppLifecycleState state)
+{
+    std::string stateStr;
+    switch (state)
+    {
+    case Exchange::IAppManager::AppLifecycleState::APP_STATE_UNLOADED:
+        stateStr = "APP_STATE_UNLOADED";
+        break;
+    case Exchange::IAppManager::AppLifecycleState::APP_STATE_LOADING:
+        stateStr = "APP_STATE_LOADING";
+        break;
+    case Exchange::IAppManager::AppLifecycleState::APP_STATE_INITIALIZING:
+        stateStr = "APP_STATE_INITIALIZING";
+        break;
+    case Exchange::IAppManager::AppLifecycleState::APP_STATE_PAUSED:
+        stateStr = "APP_STATE_PAUSED";
+        break;
+    case Exchange::IAppManager::AppLifecycleState::APP_STATE_RUNNING:
+        stateStr = "APP_STATE_RUNNING";
+        break;
+    case Exchange::IAppManager::AppLifecycleState::APP_STATE_ACTIVE:
+        stateStr = "APP_STATE_ACTIVE";
+        break;
+    case Exchange::IAppManager::AppLifecycleState::APP_STATE_SUSPENDED:
+        stateStr = "APP_STATE_SUSPENDED";
+        break;
+    case Exchange::IAppManager::AppLifecycleState::APP_STATE_HIBERNATED:
+        stateStr = "APP_STATE_HIBERNATED";
+        break;
+    case Exchange::IAppManager::AppLifecycleState::APP_STATE_TERMINATING:
+        stateStr = "APP_STATE_TERMINATING";
+        break;
+    default:
+        stateStr = "UNKNOWN_STATE";
+        break;
+    }
+    return stateStr;
 }

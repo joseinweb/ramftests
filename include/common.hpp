@@ -8,3 +8,5 @@
 #include "WPEFramework/interfaces/IAppManager.h"
 
 #include <memory>
+using namespace WPEFramework;
+

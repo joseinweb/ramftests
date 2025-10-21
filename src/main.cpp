@@ -5,6 +5,7 @@ using namespace std;
 ThunderBridge thunderBridge;
 
 void printMainMenu() {
+    cout << "--------------------------" << endl;
     cout << "RDK App Managers Test Utility" << endl;
     cout << "Select an option:" << endl;
     cout << "1. Option 1 : Check RDK App managers status" << endl;
@@ -18,10 +19,12 @@ void printMainMenu() {
     cout << "9. Option 9 : Stop application" << endl;
     cout << "10. Option 10 : Get application status" << endl;
     cout << "0 . Exit" << endl;
+    cout << "--------------------------" << endl;
 }
-int acceptUserInput() {
+int processUserCommands() {
     int choice;
     while (true) {
+        printMainMenu();
         cout << "Enter your choice: ";
         cin >> choice;
 
@@ -78,9 +81,8 @@ int acceptUserInput() {
 }
 int main() {
     thunderBridge.initialize();
-    thunderBridge.connect();
-    printMainMenu();
-    acceptUserInput();
+    thunderBridge.connect();   
+    processUserCommands();
 
     return 0;
 }

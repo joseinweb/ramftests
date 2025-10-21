@@ -60,6 +60,9 @@ private:
     shared_ptr<Exchange::IAppManager::INotification> appMgrEvtHandler = nullptr;
 
     void listInstalledApplications();
+    void handleIsAppInstalledRequest();
+    void handleLoadedAppsRequest();
+    string mapLifeCycleStateToString(Exchange::IAppManager::AppLifecycleState state);
 
 
 public:
