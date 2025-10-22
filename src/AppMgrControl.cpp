@@ -1,6 +1,7 @@
 #include "AppMgrControl.hpp"
 #include "json/json.h"
 
+
 AppMgrControl::AppMgrControl(/* args */)
 {
     appManager = nullptr;
@@ -49,17 +50,16 @@ void AppMgrControl::displayAppManagerMenu()
         std::cout << "8. Kill Application" << std::endl;
         std::cout << "9. Start System app" << std::endl;
         std::cout << "10. Stop System app" << std::endl;
-        std::cout << "11. Get Application State" << std::endl;
-        std::cout << "12. Send App Intent" << std::endl;
-        std::cout << "13. Clear application data" << std::endl;
-        std::cout << "14. Clear all application data" << std::endl;
-        std::cout << "15. Get application metadata" << std::endl;
-        std::cout << "16. Get application property" << std::endl;
-        std::cout << "17. Set application property" << std::endl;
-        std::cout << "18. Get Max running applications" << std::endl;
-        std::cout << "19. Get Max Hibernated applications" << std::endl;
-        std::cout << "20. Get Min Hibernated flash usage" << std::endl;
-        std::cout << "21. Get Max inactive RAM usage" << std::endl;
+        std::cout << "11. Send App Intent" << std::endl;
+        std::cout << "12. Clear application data" << std::endl;
+        std::cout << "13. Clear all application data" << std::endl;
+        std::cout << "14. Get application metadata" << std::endl;
+        std::cout << "15. Get application property" << std::endl;
+        std::cout << "16. Set application property" << std::endl;
+        std::cout << "17. Get Max running applications" << std::endl;
+        std::cout << "18. Get Max Hibernated applications" << std::endl;
+        std::cout << "19. Get Min Hibernated flash usage" << std::endl;
+        std::cout << "20. Get Max inactive RAM usage" << std::endl;
         std::cout << "--------------------------" << std::endl;
         // Add more menu options as needed
 
@@ -79,6 +79,22 @@ void AppMgrControl::displayAppManagerMenu()
         case 3:
             handleLoadedAppsRequest();
             break;
+        case 4:
+            handleLaunchApplicationRequest();
+            break;
+        case 5:
+            // handlePreloadApplicationRequest();
+            break;
+        case 6:
+            handleCloseApplicationRequest();
+            break;
+        case 7:
+            handleTerminateApplicationRequest();
+            break;
+        case 8:
+            handleKillApplicationRequest();
+            break;
+
         case 0:
         default:
             std::cout << "Returning to main menu..." << std::endl;
@@ -87,6 +103,74 @@ void AppMgrControl::displayAppManagerMenu()
             return;
         }
     }
+}
+void AppMgrControl::handleApplicationClosureRequest(CLOSURE_REASON reason)
+{
+    if (appManager == nullptr)
+    {
+        std::cerr << "AppManager is not initialized." << std::endl;
+        return;
+    }
+
+    std::string appInstanceId;
+    std::cout << "Enter the App Instance ID to handle closure: ";
+    std::cin >> appInstanceId;
+    uint32_t result = 0;
+    switch (reason)
+    {
+    case CLOSURE_REASON::CLOSE:
+        result = appManager->CloseApp(appInstanceId);
+        break;
+    case CLOSURE_REASON::TERMINATE:
+        result = appManager->TerminateApp(appInstanceId);
+        break;
+    case CLOSURE_REASON::KILL:
+        result = appManager->KillApp(appInstanceId);
+        break;
+    default:
+        std::cerr << "Invalid closure reason." << std::endl;
+        return;
+    }
+
+    if (result != Core::ERROR_NONE)
+    {
+        std::cerr << "Failed to handle application closure: " << appInstanceId << std::endl;
+        return;
+    }
+    std::cout << "Handle closure request sent for application instance: " << appInstanceId << std::endl;
+}
+void AppMgrControl::handleCloseApplicationRequest()
+{
+    handleApplicationClosureRequest(CLOSURE_REASON::CLOSE);
+}
+void AppMgrControl::handleTerminateApplicationRequest()
+{
+    handleApplicationClosureRequest(CLOSURE_REASON::TERMINATE);
+}
+void AppMgrControl::handleKillApplicationRequest()
+{
+    handleApplicationClosureRequest(CLOSURE_REASON::KILL);
+}
+void AppMgrControl::handleLaunchApplicationRequest()
+{
+    if (appManager == nullptr)
+    {
+        std::cerr << "AppManager is not initialized." << std::endl;
+        return;
+    }
+
+    std::string appId;
+    std::cout << "Enter the App ID to launch: ";
+    std::cin >> appId;
+
+    uint32_t result = appManager->LaunchApp(appId, "", "");
+
+    if (result != Core::ERROR_NONE)
+    {
+        std::cerr << "Failed to launch application: " << appId << std::endl;
+        return;
+    }
+    std::cout << "Launch request sent for application: " << appId << std::endl;
 }
 void AppMgrControl::listInstalledApplications()
 {
@@ -169,50 +253,11 @@ void AppMgrControl::handleLoadedAppsRequest()
         for (const auto &app : root)
         {
             std::cout << " - " << app["appId"].asString() << " (appInstanceId: " << app["appInstanceId"].asString() << ")"
-                      << " activeSessionId: " << app["activeSessionId"].asString() << " Current state: " <<
-                      mapLifeCycleStateToString(static_cast<Exchange::IAppManager::AppLifecycleState>(app["currentLifecycleState"].asInt())) << std::endl;
+                      << " activeSessionId: " << app["activeSessionId"].asString() << " Current state: " << mapLifeCycleStateToString(static_cast<Exchange::IAppManager::AppLifecycleState>(app["currentLifecycleState"].asInt())) << std::endl;
         }
     }
     else
     {
         std::cerr << "Failed to retrieve loaded applications." << std::endl;
     }
-}
-std::string AppMgrControl::mapLifeCycleStateToString(Exchange::IAppManager::AppLifecycleState state)
-{
-    std::string stateStr;
-    switch (state)
-    {
-    case Exchange::IAppManager::AppLifecycleState::APP_STATE_UNLOADED:
-        stateStr = "APP_STATE_UNLOADED";
-        break;
-    case Exchange::IAppManager::AppLifecycleState::APP_STATE_LOADING:
-        stateStr = "APP_STATE_LOADING";
-        break;
-    case Exchange::IAppManager::AppLifecycleState::APP_STATE_INITIALIZING:
-        stateStr = "APP_STATE_INITIALIZING";
-        break;
-    case Exchange::IAppManager::AppLifecycleState::APP_STATE_PAUSED:
-        stateStr = "APP_STATE_PAUSED";
-        break;
-    case Exchange::IAppManager::AppLifecycleState::APP_STATE_RUNNING:
-        stateStr = "APP_STATE_RUNNING";
-        break;
-    case Exchange::IAppManager::AppLifecycleState::APP_STATE_ACTIVE:
-        stateStr = "APP_STATE_ACTIVE";
-        break;
-    case Exchange::IAppManager::AppLifecycleState::APP_STATE_SUSPENDED:
-        stateStr = "APP_STATE_SUSPENDED";
-        break;
-    case Exchange::IAppManager::AppLifecycleState::APP_STATE_HIBERNATED:
-        stateStr = "APP_STATE_HIBERNATED";
-        break;
-    case Exchange::IAppManager::AppLifecycleState::APP_STATE_TERMINATING:
-        stateStr = "APP_STATE_TERMINATING";
-        break;
-    default:
-        stateStr = "UNKNOWN_STATE";
-        break;
-    }
-    return stateStr;
 }

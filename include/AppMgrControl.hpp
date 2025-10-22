@@ -4,6 +4,45 @@
 using namespace WPEFramework;
 using namespace std;
 
+inline std::string mapLifeCycleStateToString(Exchange::IAppManager::AppLifecycleState state)
+{
+    std::string stateStr;
+    switch (state)
+    {
+    case Exchange::IAppManager::AppLifecycleState::APP_STATE_UNLOADED:
+        stateStr = "APP_STATE_UNLOADED";
+        break;
+    case Exchange::IAppManager::AppLifecycleState::APP_STATE_LOADING:
+        stateStr = "APP_STATE_LOADING";
+        break;
+    case Exchange::IAppManager::AppLifecycleState::APP_STATE_INITIALIZING:
+        stateStr = "APP_STATE_INITIALIZING";
+        break;
+    case Exchange::IAppManager::AppLifecycleState::APP_STATE_PAUSED:
+        stateStr = "APP_STATE_PAUSED";
+        break;
+    case Exchange::IAppManager::AppLifecycleState::APP_STATE_RUNNING:
+        stateStr = "APP_STATE_RUNNING";
+        break;
+    case Exchange::IAppManager::AppLifecycleState::APP_STATE_ACTIVE:
+        stateStr = "APP_STATE_ACTIVE";
+        break;
+    case Exchange::IAppManager::AppLifecycleState::APP_STATE_SUSPENDED:
+        stateStr = "APP_STATE_SUSPENDED";
+        break;
+    case Exchange::IAppManager::AppLifecycleState::APP_STATE_HIBERNATED:
+        stateStr = "APP_STATE_HIBERNATED";
+        break;
+    case Exchange::IAppManager::AppLifecycleState::APP_STATE_TERMINATING:
+        stateStr = "APP_STATE_TERMINATING";
+        break;
+    default:
+        stateStr = "UNKNOWN_STATE";
+        break;
+    }
+    return stateStr;
+}
+
 class AppManagerEventHandler : public Exchange::IAppManager::INotification
 {
 public:
@@ -19,7 +58,7 @@ public:
     }
     void OnAppLifecycleStateChanged(const string &appId, const string &appInstanceId, const Exchange::IAppManager::AppLifecycleState newState, const Exchange::IAppManager::AppLifecycleState oldState, const Exchange::IAppManager::AppErrorReason errorReason)
     {
-        std::cout << "App Lifecycle State Changed: " << appId << " to state " << newState << std::endl;
+        std::cout << "App Lifecycle State Changed: " << appId << " from "<< mapLifeCycleStateToString(oldState) << " to state " << mapLifeCycleStateToString(newState) << std::endl;
     }
     void OnAppLaunchRequest(const string &appId, const string &intent, const string &source)
     {
@@ -52,6 +91,12 @@ public:
     }
 };
 
+enum class CLOSURE_REASON
+{
+    CLOSE = 0,
+    TERMINATE = 1,
+    KILL = 2
+};
 
 class AppMgrControl
 {
@@ -62,8 +107,12 @@ private:
     void listInstalledApplications();
     void handleIsAppInstalledRequest();
     void handleLoadedAppsRequest();
-    string mapLifeCycleStateToString(Exchange::IAppManager::AppLifecycleState state);
+    void handleLaunchApplicationRequest();
+    void handleCloseApplicationRequest();
+    void handleTerminateApplicationRequest();
+    void handleKillApplicationRequest();
 
+    void handleApplicationClosureRequest(CLOSURE_REASON reason);
 
 public:
     AppMgrControl(/* args */);
