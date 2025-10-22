@@ -3,7 +3,7 @@
 
 #include "WPEFramework/interfaces/IPackageManager.h"
 #include "AppMgrControl.hpp"
-using namespace WPEFramework;
+
 
 class ThunderBridge {
 public:

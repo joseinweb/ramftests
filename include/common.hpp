@@ -5,8 +5,10 @@
 
 #include <WPEFramework/com/com.h>
 #include <WPEFramework/core/core.h>
-#include "WPEFramework/interfaces/IAppManager.h"
 
 #include <memory>
+#include <iostream>
+
 using namespace WPEFramework;
+using namespace std;
 

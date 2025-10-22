@@ -45,6 +45,8 @@ void ThunderBridge::deinitialize()
 {
 
     cout << "Disconnected from Thunder framework." << endl;
+    mAppMgrControl = nullptr;
+    mClient.Release();
 }
 void ThunderBridge::printPluginStatus(std::string pluginName)
 {
@@ -58,7 +60,7 @@ void ThunderBridge::printPluginStatus(std::string pluginName)
 void ThunderBridge::showAppManagerMenu()
 {
     if(mAppMgrControl) {
-        mAppMgrControl->displayAppManagerMenu();
+        mAppMgrControl->displayMenu();
     } else {
         cout<<"AppMgrControl is not initialized."<<endl;
     }

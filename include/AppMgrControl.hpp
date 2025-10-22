@@ -1,7 +1,9 @@
 #pragma once
 #include <memory>
 #include "common.hpp"
-using namespace WPEFramework;
+#include "MgrControl.hpp"
+#include "WPEFramework/interfaces/IAppManager.h"
+
 using namespace std;
 
 inline std::string mapLifeCycleStateToString(Exchange::IAppManager::AppLifecycleState state)
@@ -58,7 +60,7 @@ public:
     }
     void OnAppLifecycleStateChanged(const string &appId, const string &appInstanceId, const Exchange::IAppManager::AppLifecycleState newState, const Exchange::IAppManager::AppLifecycleState oldState, const Exchange::IAppManager::AppErrorReason errorReason)
     {
-        std::cout << "App Lifecycle State Changed: " << appId << " from "<< mapLifeCycleStateToString(oldState) << " to state " << mapLifeCycleStateToString(newState) << std::endl;
+        std::cout << "App Lifecycle State Changed: " << appId << " from " << mapLifeCycleStateToString(oldState) << " to state " << mapLifeCycleStateToString(newState) << std::endl;
     }
     void OnAppLaunchRequest(const string &appId, const string &intent, const string &source)
     {
@@ -72,17 +74,17 @@ public:
     }
     uint32_t AddRef() const
     {
-        cout << " Hey I (AddRef) am getting called  " << endl;
+        cout << " Hey I (AppManagerEventHandler::AddRef) am getting called  " << endl;
         return Core::ERROR_NONE;
     }
     uint32_t Release() const
     {
-        cout << " Hey I (Release) am getting called " << endl;
+        cout << " Hey I (AppManagerEventHandler::Release) am getting called " << endl;
         return Core::ERROR_NONE;
     }
     void *QueryInterface(const uint32_t interfaceNumber)
     {
-        cout << " Hey I (QueryInterface) am getting called " << endl;
+        cout << " Hey I (AppManagerEventHandler::QueryInterface) am getting called " << endl;
         if (interfaceNumber == Exchange::IAppManager::INotification::ID)
         {
             return static_cast<Exchange::IAppManager::INotification *>(this);
@@ -98,7 +100,7 @@ enum class CLOSURE_REASON
     KILL = 2
 };
 
-class AppMgrControl
+class AppMgrControl 
 {
 private:
     Exchange::IAppManager *appManager;
@@ -111,14 +113,34 @@ private:
     void handleCloseApplicationRequest();
     void handleTerminateApplicationRequest();
     void handleKillApplicationRequest();
+    void handlePreloadApplicationRequest();
+    void handleSystemAppStartRequest();
+    void handleSystemAppStopRequest();
+
+    void handleSendAppIntentRequest();
+
+    void handleClearApplicationDataRequest();
+
+    void handleClearAllApplicationDataRequest();
+    void handleGetApplicationMetadataRequest();
+
+    void handleGetApplicationPropertyRequest();
+
+    void handleSetApplicationPropertyRequest();
+
+    void handleGetMaxRunningApplicationsRequest();
+
+    void handleGetMaxHibernatedApplicationsRequest();
+    void handleGetMaxHibernatedFlashUsageRequest();
+
+    void handleGetMaxInactiveRAMUsageRequest();
 
     void handleApplicationClosureRequest(CLOSURE_REASON reason);
 
 public:
     AppMgrControl(/* args */);
     ~AppMgrControl();
-    bool initialize(Core::ProxyType<RPC::CommunicatorClient> &client);
+    bool initialize(Core::ProxyType<RPC::CommunicatorClient> &client) ;
     void checkPluginStatus();
-    void displayAppManagerMenu();
-    
+    void displayMenu();
 };

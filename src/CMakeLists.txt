@@ -1,7 +1,8 @@
 set (TARGET "ramtestapp")
 add_executable(${TARGET} main.cpp 
     AppMgrControl.cpp 
-    ThunderBridge.cpp)
+    ThunderBridge.cpp
+    PkgMgrControl.cpp  )
 
 find_package(PkgConfig REQUIRED)
 
