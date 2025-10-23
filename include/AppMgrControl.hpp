@@ -100,7 +100,7 @@ enum class CLOSURE_REASON
     KILL = 2
 };
 
-class AppMgrControl 
+class AppMgrControl : public MgrCtrl
 {
 private:
     Exchange::IAppManager *appManager;
@@ -140,7 +140,7 @@ private:
 public:
     AppMgrControl(/* args */);
     ~AppMgrControl();
-    bool initialize(Core::ProxyType<RPC::CommunicatorClient> &client) ;
-    void checkPluginStatus();
-    void displayMenu();
+    bool initialize(Core::ProxyType<RPC::CommunicatorClient> &client) override;
+    void checkPluginStatus() override;
+    void displayMenu() override;
 };

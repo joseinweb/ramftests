@@ -11,6 +11,8 @@ AppMgrControl::~AppMgrControl()
     if (appManager)
     {
         appManager->Unregister(appMgrEvtHandler.get());
+        appMgrEvtHandler.reset();
+        appManager->Release();
         appManager = nullptr;
     }
     std::cout << "AppMgrControl Destructor Called" << std::endl;

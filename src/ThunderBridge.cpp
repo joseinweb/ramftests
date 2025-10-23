@@ -45,6 +45,7 @@ void ThunderBridge::deinitialize()
 {
 
     cout << "Disconnected from Thunder framework." << endl;
+    mAppMgrControl.release();
     mAppMgrControl = nullptr;
     mClient.Release();
 }
