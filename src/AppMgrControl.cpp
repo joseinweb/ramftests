@@ -1,7 +1,7 @@
 #include "AppMgrControl.hpp"
 #include "json/json.h"
-
-AppMgrControl::AppMgrControl(/* args */):appManager(nullptr), appMgrEvtHandler(nullptr)
+#include <cassert>
+AppMgrControl::AppMgrControl(/* args */) : appManager(nullptr), appMgrEvtHandler(nullptr)
 {
     std::cout << "AppMgrControl Constructor Called" << std::endl;
 }
@@ -37,6 +37,8 @@ bool AppMgrControl::checkPluginStatus()
 }
 void AppMgrControl::displayMenu()
 {
+
+    assert(appManager != nullptr && "AppManager interface is not initialized.");
     while (true)
     {
 
@@ -64,11 +66,8 @@ void AppMgrControl::displayMenu()
         std::cout << "19. Get Min Hibernated flash usage" << std::endl;
         std::cout << "20. Get Max inactive RAM usage" << std::endl;
         std::cout << "--------------------------" << std::endl;
-        // Add more menu options as needed
 
-        int choice;
-        std::cout << "Enter your choice: ";
-        std::cin >> choice;
+        int choice = retrieveInputFromUser<int>("Enter your choice: ", false, 0);
 
         switch (choice)
         {
@@ -134,25 +133,18 @@ void AppMgrControl::displayMenu()
             handleGetMaxInactiveRAMUsageRequest();
             break;
         case 0:
-        default:
-            std::cout << "Returning to main menu..." << std::endl;
-            std::cin.clear();
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             return;
+        default:
+            std::cout << "Invalid choice. Please try again." << std::endl;
         }
     }
 }
 void AppMgrControl::handleSystemAppStopRequest()
 {
-    if (appManager == nullptr)
-    {
-        std::cerr << "AppManager is not initialized." << std::endl;
-        return;
-    }
+    assert(appManager != nullptr && "AppManager interface is not initialized.");
 
     std::string appId;
-    std::cout << "Enter the System App ID to stop: ";
-    std::cin >> appId;
+    appId = retrieveInputFromUser<std::string>("Enter the System App ID to stop: ", false, "");
 
     uint32_t result = appManager->StopSystemApp(appId);
 
@@ -165,18 +157,12 @@ void AppMgrControl::handleSystemAppStopRequest()
 }
 void AppMgrControl::handleSendAppIntentRequest()
 {
-    if (appManager == nullptr)
-    {
-        std::cerr << "AppManager is not initialized." << std::endl;
-        return;
-    }
+    assert(appManager != nullptr && "AppManager interface is not initialized.");
 
     std::string appId, intent;
-    std::cout << "Enter the App ID to send intent: ";
-    std::cin >> appId;    
+    appId = retrieveInputFromUser<std::string>("Enter the App ID to send intent: ", false, "");
 
-    std::cout << "Enter intent to send: ";
-    std::cin >> intent;
+    intent = retrieveInputFromUser<std::string>("Enter intent to send: ", false, "");
     uint32_t result = appManager->SendIntent(appId, intent);
 
     if (result != Core::ERROR_NONE)
@@ -189,14 +175,10 @@ void AppMgrControl::handleSendAppIntentRequest()
 
 void AppMgrControl::handleClearApplicationDataRequest()
 {
-    if (appManager == nullptr)
-    {
-        std::cerr << "AppManager is not initialized." << std::endl;
-        return;
-    }
+    assert(appManager != nullptr && "AppManager interface is not initialized.");
+
     std::string appId;
-    std::cout << "Enter the App ID to clear data: ";
-    std::cin >> appId;
+    appId = retrieveInputFromUser<std::string>("Enter the App ID to clear data: ", false, "");
     uint32_t result = appManager->ClearAppData(appId);
     if (result != Core::ERROR_NONE)
     {
@@ -208,11 +190,7 @@ void AppMgrControl::handleClearApplicationDataRequest()
 
 void AppMgrControl::handleClearAllApplicationDataRequest()
 {
-    if (appManager == nullptr)
-    {
-        std::cerr << "AppManager is not initialized." << std::endl;
-        return;
-    }
+    assert(appManager != nullptr && "AppManager interface is not initialized.");
 
     uint32_t result = appManager->ClearAllAppData();
     if (result != Core::ERROR_NONE)
@@ -225,19 +203,15 @@ void AppMgrControl::handleClearAllApplicationDataRequest()
 
 void AppMgrControl::handleGetApplicationMetadataRequest()
 {
-    if (appManager == nullptr)
-    {
-        std::cerr << "AppManager is not initialized." << std::endl;
-        return;
-    }
+
+    assert(appManager != nullptr && "AppManager interface is not initialized.");
 
     std::string appId;
-    std::cout << "Enter the App ID to get metadata: ";
-    std::cin >> appId;
+    appId = retrieveInputFromUser<std::string>("Enter the App ID to get metadata: ", false, "");
+
 
     std::string metadataKey;
-    std::cout << "Enter the metadata key to retrieve: ";
-    std::cin >> metadataKey;
+    metadataKey = retrieveInputFromUser<std::string>("Enter the metadata key to retrieve: ", false, "");
     std::string metadata;
     uint32_t result = appManager->GetAppMetadata(appId, metadataKey, metadata);
 
@@ -251,19 +225,13 @@ void AppMgrControl::handleGetApplicationMetadataRequest()
 
 void AppMgrControl::handleGetApplicationPropertyRequest()
 {
-    if (appManager == nullptr)
-    {
-        std::cerr << "AppManager is not initialized." << std::endl;
-        return;
-    }
+    assert(appManager != nullptr && "AppManager interface is not initialized.");
 
     std::string appId;
-    std::cout << "Enter the App ID to get property: ";
-    std::cin >> appId;
+    appId = retrieveInputFromUser<std::string>("Enter the App ID to get property: ", false, "");
 
     std::string propertyKey;
-    std::cout << "Enter the property key to retrieve: ";
-    std::cin >> propertyKey;
+    propertyKey = retrieveInputFromUser<std::string>("Enter the property key to retrieve: ", false, "");
 
     std::string propertyValue;
     uint32_t result = appManager->GetAppProperty(appId, propertyKey, propertyValue);
@@ -278,21 +246,14 @@ void AppMgrControl::handleGetApplicationPropertyRequest()
 
 void AppMgrControl::handleSetApplicationPropertyRequest()
 {
-    if (appManager == nullptr)
-    {
-        std::cerr << "AppManager is not initialized." << std::endl;
-        return;
-    }
+    assert(appManager != nullptr && "AppManager interface is not initialized.");
 
     std::string appId;
-    std::cout << "Enter the App ID to set property: ";
-    std::cin >> appId;
+    appId = retrieveInputFromUser<std::string>("Enter the App ID to set property: ", false, "");
 
     std::string propertyKey, propertyValue;
-    std::cout << "Enter the property key to set: ";
-    std::cin >> propertyKey;
-    std::cout << "Enter the property value to set: ";
-    std::cin >> propertyValue;
+    propertyKey = retrieveInputFromUser<std::string>("Enter the property key to set: ", false, "");
+    propertyValue = retrieveInputFromUser<std::string>("Enter the property value to set: ", false, "");
 
     uint32_t result = appManager->SetAppProperty(appId, propertyKey, propertyValue);
 
@@ -306,11 +267,8 @@ void AppMgrControl::handleSetApplicationPropertyRequest()
 
 void AppMgrControl::handleGetMaxRunningApplicationsRequest()
 {
-    if (appManager == nullptr)
-    {
-        std::cerr << "AppManager is not initialized." << std::endl;
-        return;
-    }
+    assert(appManager != nullptr && "AppManager interface is not initialized.");
+
     int32_t maxRunningApps = 0;
     uint32_t result = appManager->GetMaxRunningApps(maxRunningApps);
     if (result != Core::ERROR_NONE)
@@ -322,11 +280,7 @@ void AppMgrControl::handleGetMaxRunningApplicationsRequest()
 }
 void AppMgrControl::handleGetMaxHibernatedApplicationsRequest()
 {
-    if (appManager == nullptr)
-    {
-        std::cerr << "AppManager is not initialized." << std::endl;
-        return;
-    }
+    assert(appManager != nullptr && "AppManager interface is not initialized.");
     int32_t maxHibernatedApps = 0;
     uint32_t result = appManager->GetMaxHibernatedApps(maxHibernatedApps);
     if (result != Core::ERROR_NONE)
@@ -339,11 +293,8 @@ void AppMgrControl::handleGetMaxHibernatedApplicationsRequest()
 
 void AppMgrControl::handleGetMaxHibernatedFlashUsageRequest()
 {
-    if (appManager == nullptr)
-    {
-        std::cerr << "AppManager is not initialized." << std::endl;
-        return;
-    }
+    assert(appManager != nullptr && "AppManager interface is not initialized.");
+
     int32_t minHibernatedFlashUsage = 0;
     uint32_t result = appManager->GetMaxHibernatedFlashUsage(minHibernatedFlashUsage);
     if (result != Core::ERROR_NONE)
@@ -356,11 +307,8 @@ void AppMgrControl::handleGetMaxHibernatedFlashUsageRequest()
 
 void AppMgrControl::handleGetMaxInactiveRAMUsageRequest()
 {
-    if (appManager == nullptr)
-    {
-        std::cerr << "AppManager is not initialized." << std::endl;
-        return;
-    }
+    assert(appManager != nullptr && "AppManager interface is not initialized.");
+
     int32_t maxInactiveRAMUsage = 0;
     uint32_t result = appManager->GetMaxInactiveRamUsage(maxInactiveRAMUsage);
     if (result != Core::ERROR_NONE)
@@ -373,15 +321,10 @@ void AppMgrControl::handleGetMaxInactiveRAMUsageRequest()
 
 void AppMgrControl::handleSystemAppStartRequest()
 {
-    if (appManager == nullptr)
-    {
-        std::cerr << "AppManager is not initialized." << std::endl;
-        return;
-    }
+    assert(appManager != nullptr && "AppManager interface is not initialized.");
 
     std::string appId;
-    std::cout << "Enter the System App ID to start: ";
-    std::cin >> appId;
+    appId = retrieveInputFromUser<std::string>("Enter the System App ID to start: ", false, "");
 
     uint32_t result = appManager->StartSystemApp(appId);
 
@@ -395,18 +338,12 @@ void AppMgrControl::handleSystemAppStartRequest()
 
 void AppMgrControl::handlePreloadApplicationRequest()
 {
-    if (appManager == nullptr)
-    {
-        std::cerr << "AppManager is not initialized." << std::endl;
-        return;
-    }
+    assert(appManager != nullptr && "AppManager interface is not initialized.");
 
     std::string appId;
-    std::cout << "Enter the App ID to preload: ";
-    std::cin >> appId;
+    appId = retrieveInputFromUser<std::string>("Enter the App ID to preload: ", false, "");
 
     std::string error;
-
     uint32_t result = appManager->PreloadApp(appId, "", error);
 
     if (result != Core::ERROR_NONE)
@@ -419,15 +356,10 @@ void AppMgrControl::handlePreloadApplicationRequest()
 
 void AppMgrControl::handleApplicationClosureRequest(CLOSURE_REASON reason)
 {
-    if (appManager == nullptr)
-    {
-        std::cerr << "AppManager is not initialized." << std::endl;
-        return;
-    }
+    assert(appManager != nullptr && "AppManager interface is not initialized.");
 
     std::string appInstanceId;
-    std::cout << "Enter the App Instance ID to handle closure: ";
-    std::cin >> appInstanceId;
+    appInstanceId = retrieveInputFromUser<std::string>("Enter the App Instance ID to handle closure: ", false, "");
     uint32_t result = 0;
     switch (reason)
     {
@@ -467,15 +399,10 @@ void AppMgrControl::handleKillApplicationRequest()
 
 void AppMgrControl::handleLaunchApplicationRequest()
 {
-    if (appManager == nullptr)
-    {
-        std::cerr << "AppManager is not initialized." << std::endl;
-        return;
-    }
+    assert(appManager != nullptr && "AppManager interface is not initialized.");
 
     std::string appId;
-    std::cout << "Enter the App ID to launch: ";
-    std::cin >> appId;
+    appId = retrieveInputFromUser<std::string>("Enter the App ID to launch: ", false, "");
 
     uint32_t result = appManager->LaunchApp(appId, "", "");
 
@@ -488,11 +415,7 @@ void AppMgrControl::handleLaunchApplicationRequest()
 }
 void AppMgrControl::listInstalledApplications()
 {
-    if (appManager == nullptr)
-    {
-        std::cerr << "AppManager is not initialized." << std::endl;
-        return;
-    }
+    assert(appManager != nullptr && "AppManager interface is not initialized.");
 
     std::string apps;
     uint32_t result = appManager->GetInstalledApps(apps);
@@ -520,15 +443,10 @@ void AppMgrControl::listInstalledApplications()
 }
 void AppMgrControl::handleIsAppInstalledRequest()
 {
-    if (appManager == nullptr)
-    {
-        std::cerr << "AppManager is not initialized." << std::endl;
-        return;
-    }
+    assert(appManager != nullptr && "AppManager interface is not initialized.");
 
     std::string appId;
-    std::cout << "Enter the App ID to check: ";
-    std::cin >> appId;
+    appId = retrieveInputFromUser<std::string>("Enter the App ID to check: ", false, "");
 
     bool isInstalled = false;
     uint32_t result = appManager->IsInstalled(appId, isInstalled);
@@ -542,11 +460,7 @@ void AppMgrControl::handleIsAppInstalledRequest()
 }
 void AppMgrControl::handleLoadedAppsRequest()
 {
-    if (appManager == nullptr)
-    {
-        std::cerr << "AppManager is not initialized." << std::endl;
-        return;
-    }
+    assert(appManager != nullptr && "AppManager interface is not initialized.");
     std::string loadedAppsJson;
 
     uint32_t result = appManager->GetLoadedApps(loadedAppsJson);

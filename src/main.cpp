@@ -15,12 +15,11 @@ void printMainMenu() {
     cout << "--------------------------" << endl;
 }
 int processUserCommands() {
-    int choice;
+
     while (true) {
         printMainMenu();
-        cout << "Enter your choice: ";
-        cin >> choice;
 
+        int choice = retrieveInputFromUser<int>("Enter your choice: ", false, 0);
         switch (choice) {
             case 1:
                 cout << "Checking RDK App managers status..." << endl;

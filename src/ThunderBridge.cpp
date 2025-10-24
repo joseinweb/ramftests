@@ -17,7 +17,6 @@ ThunderBridge::~ThunderBridge()
     deinitialize();
 }
 
-
 bool ThunderBridge::initializeManager(MgrCtrl &manager)
 {
     Core::ProxyType<RPC::CommunicatorClient> client;
@@ -47,6 +46,16 @@ bool ThunderBridge::initialize()
         std::cerr << "Failed to initialize PkgMgrControl." << std::endl;
         return false;
     }
+    if (!initializeManager(*mDownloadMgrControl))
+    {
+        std::cerr << "Failed to initialize DownloadMgrControl." << std::endl;
+        return false;
+    }
+    if (!initializeManager(*mInstallMgrCtrl))
+    {
+        std::cerr << "Failed to initialize InstallMgrCtrl." << std::endl;
+        return false;
+    }
 
     cout << "ThunderBridge initialized." << endl;
     return true;
@@ -62,9 +71,13 @@ void ThunderBridge::deinitialize()
     cout << "Disconnected from Thunder framework." << endl;
     mAppMgrControl.release();
     mPkgMgrControl.release();
+    mDownloadMgrControl.release();
+    mInstallMgrCtrl.release();
 
     mAppMgrControl = nullptr;
     mPkgMgrControl = nullptr;
+    mDownloadMgrControl = nullptr;
+    mInstallMgrCtrl = nullptr;
 }
 void ThunderBridge::printPluginStatus(std::string pluginName)
 {
@@ -85,12 +98,51 @@ void ThunderBridge::showAppManagerMenu()
 }
 void ThunderBridge::showPackageManagerMenu()
 {
-    if (mPkgMgrControl)
+    while (true)
     {
-        mPkgMgrControl->displayMenu();
-    }
-    else
-    {
-        cout << "PkgMgrControl is not initialized." << endl;
+        cout << "Package Manager Menu:" << endl;
+        cout << "1. Package Downloader Menu:" << endl;
+        cout << "2. Package Installer Menu:" << endl;
+        cout << "3. Package Handler Menu:" << endl;
+        cout << "0. Return to Main Menu" << endl;
+        int choice = retrieveInputFromUser<int>("Enter your choice: ", false, 0);
+
+        switch (choice)
+        {
+        case 1:
+            if (mDownloadMgrControl)
+            {
+                mDownloadMgrControl->displayMenu();
+            }
+            else
+            {
+                cout << "DownloadMgrControl is not initialized." << endl;
+            }
+            break;
+        case 2:
+            if (mInstallMgrCtrl)
+            {
+                mInstallMgrCtrl->displayMenu();
+            }
+            else
+            {
+                cout << "InstallMgrCtrl is not initialized." << endl;
+            }
+            break;
+        case 3:
+            if (mPkgMgrControl)
+            {
+                mPkgMgrControl->displayMenu();
+            }
+            else
+            {
+                cout << "PkgMgrControl is not initialized." << endl;
+            }
+            break;
+        case 0:
+            return;
+        default:
+            cout << "Invalid choice. Please try again." << endl;
+        }
     }
 }

@@ -1,4 +1,5 @@
 #include "DownloadMgrCtrl.hpp"
+#include <cassert>
 
 DownloadMgrControl::DownloadMgrControl() : dwldCtl(nullptr), dwldEventHandler(nullptr)
 {
@@ -28,13 +29,7 @@ bool DownloadMgrControl::initialize(Core::ProxyType<RPC::CommunicatorClient> &cl
 }
 bool DownloadMgrControl::checkPluginStatus()
 {
-    if (dwldCtl == nullptr)
-    {
-        std::cerr << "IPackageDownloader interface is not initialized." << std::endl;
-        return false;
-    }
-    // Add actual status checking logic here
-    return true;
+    return (dwldCtl != nullptr);
 }
 
 void DownloadMgrControl::displayMenu()
@@ -51,9 +46,10 @@ void DownloadMgrControl::displayMenu()
         std::cout << "7. Get Storage Details" << std::endl;
         std::cout << "8. Set RateLimit" << std::endl;
         std::cout << "0. Return to Main Menu" << std::endl;
-        int choice = -1;
-        std::cout << "Enter your choice: ";
-        std::cin >> choice;
+
+
+        int choice = retrieveInputFromUser<int>("Enter your choice: ", false, 0);
+
 
         switch (choice)
         {
@@ -82,68 +78,56 @@ void DownloadMgrControl::displayMenu()
             handleSetRateLimitRequest();
             break;
         case 0:
-        default:
-            std::cin.clear();
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             return;
+        default:
+            std::cout << "Invalid choice. Please try again." << std::endl;
         }
     }
 }
 void DownloadMgrControl::handleStartDownloadRequest()
 {
-    if (nullptr != dwldCtl)
+    assert(dwldCtl != nullptr && "IPackageDownloader interface is not initialized.");
+
+    std::string url = retrieveInputFromUser<std::string>("Enter Download URL: ", false, "");
+    bool highPriority = retrieveInputFromUser<bool>("Is this a high priority download? (true/false): ", true, false);
+    int maxSpeed = retrieveInputFromUser<int>("Enter maximum download speed (KB/s, 0 for unlimited): ", true, 0);
+    int retries  = retrieveInputFromUser<int>("Enter number of retries: default 2 ", true, 2);
+
+    Exchange::IPackageDownloader::Options params;
+    params.priority = highPriority;
+    params.rateLimit = maxSpeed;
+    params.retries = retries;
+
+    Exchange::IPackageDownloader::DownloadId downloadId;
+
+    // Call the appropriate method on dwldCtl to start the download
+    uint32_t result = dwldCtl->Download(url, params, downloadId);
+    if (result != Core::ERROR_NONE)
     {
-        std::cout << "Enter Download URL: ";
-        std::string url;
-        std::cin >> url;
-
-        std::cout << "High priority download? (y/n): ";
-        char priority;
-        std::cin >> priority;
-        bool highPriority = (priority == 'y' || priority == 'Y');
-
-        std::cout << "Enter maximum download speed (KB/s, 0 for unlimited): ";
-        int maxSpeed;
-        std::cin >> maxSpeed;
-
-        std::cout << "Enter number of retries: ";
-        int retries;
-        std::cin >> retries;
-
-        Exchange::IPackageDownloader::Options params;
-        params.priority = highPriority;
-        params.rateLimit = maxSpeed;
-        params.retries = retries;
-
-        Exchange::IPackageDownloader::DownloadId downloadId;
-
-        // Call the appropriate method on dwldCtl to start the download
-        uint32_t result = dwldCtl->Download(url, params, downloadId);
-        if (result != Core::ERROR_NONE)
-        {
-            std::cerr << "Failed to start download: " << url << std::endl;
-            return;
-        }
-        std::cout << "Download started successfully. Download ID: " << downloadId.downloadId << std::endl;
+        std::cerr << "Failed to start download: " << url << std::endl;
+        return;
     }
+    std::cout << "Download started successfully. Download ID: " << downloadId.downloadId << std::endl;
 }
 
-    void DownloadMgrControl::handlePauseDownloadRequest(){
-
-    }
-    void DownloadMgrControl::handleResumeDownloadRequest(){
-
-    }
-    void DownloadMgrControl::handleCancelDownloadRequest(){
-    }
-    void DownloadMgrControl:: handleCheckDownloadStatusRequest(){
-
-    }
-    void DownloadMgrControl::handleCheckDownloadProgressRequest(){
-
-    }
-    void DownloadMgrControl::handleGetStorageDetailsRequest(){
-        
-    }
-    void DownloadMgrControl::handleSetRateLimitRequest(){
-    }
+void DownloadMgrControl::handlePauseDownloadRequest()
+{
+}
+void DownloadMgrControl::handleResumeDownloadRequest()
+{
+}
+void DownloadMgrControl::handleCancelDownloadRequest()
+{
+}
+void DownloadMgrControl::handleCheckDownloadStatusRequest()
+{
+}
+void DownloadMgrControl::handleCheckDownloadProgressRequest()
+{
+}
+void DownloadMgrControl::handleGetStorageDetailsRequest()
+{
+}
+void DownloadMgrControl::handleSetRateLimitRequest()
+{
+}
