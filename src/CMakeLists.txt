@@ -4,7 +4,9 @@ add_executable(${TARGET} main.cpp
     ThunderBridge.cpp
     PkgMgrControl.cpp  
     DownloadMgrCtrl.cpp
-    InstallMgrCtrl.cpp)
+    InstallMgrCtrl.cpp
+    CatalogManager.cpp
+    )
 
 find_package(PkgConfig REQUIRED)
 
@@ -32,6 +34,7 @@ set(COMMON_LIBRARIES
     ${WPEFRAMEWORKDEFINITIONS_LIBRARIES}
     ${WPEFRAMEWORKPLUGINS_LIBRARIES}
     jsoncpp
+    curl
     )
 
 include(GNUInstallDirs)
