@@ -1,4 +1,5 @@
 #include "InstallMgrCtrl.hpp"
+#include <cassert>
 
 InstallMgrCtrl::InstallMgrCtrl() : instlCtl(nullptr), instlEventHandler(nullptr)
 {
@@ -31,50 +32,178 @@ bool InstallMgrCtrl::initialize(Core::ProxyType<RPC::CommunicatorClient> &client
 
 bool InstallMgrCtrl::checkPluginStatus()
 {
-    if (instlCtl == nullptr)
-    {
-        std::cerr << "IPackageInstaller interface is not initialized." << std::endl;
-        return false;
-    }
-    // Add actual status checking logic here
-    return true;
+    return instlCtl != nullptr;
 }
 
 void InstallMgrCtrl::displayMenu()
 {
     while (true)
     {
+        std::cout<<"------------------------------------------------------------"<< std::endl;
         std::cout << "Install Manager Control Menu:" << std::endl;
-        std::cout << "1. Start Installation" << std::endl;
-        std::cout << "2. Pause Installation" << std::endl;
-        std::cout << "3. Resume Installation" << std::endl;
-        std::cout << "4. Cancel Installation" << std::endl;
-        std::cout << "5. Check Installation Status" << std::endl;
+        std::cout << "1. Install Package" << std::endl;
+        std::cout << "2. Uninstall Package" << std::endl;
+        std::cout << "3. List Packages" << std::endl;
+        std::cout << "4. Package install state " << std::endl;
+        std::cout << "5. Package Metadata " << std::endl;
+        std::cout << "6. Package  Configuration " << std::endl;
         std::cout << "0. Return to Main Menu" << std::endl;
 
         int choice = retrieveInputFromUser<int>("Enter your choice: ", false, 0);
+        std::cout<<"------------------------------------------------------------"<< std::endl;
 
         switch (choice)
         {
         case 1:
-            // Add logic for starting installation
+            handleStartInstallRequest();
             break;
         case 2:
-            // Add logic for pausing installation
+            handleUninstallRequest();
             break;
         case 3:
-            // Add logic for resuming installation
+            handleListPackagesRequest();
             break;
         case 4:
-            // Add logic for canceling installation
+            handlePackageInstallStateRequest();
+
             break;
         case 5:
-            // Add logic for checking installation status
+            handlePackageMetadataRequest();
+            break;
+        case 6:
+            handlePackageConfigurationRequest();
             break;
         case 0:
             return;
         default:
             std::cout << "Invalid choice. Please try again." << std::endl;
         }
+    }
+}
+
+void InstallMgrCtrl::handleStartInstallRequest()
+{
+    assert(instlCtl != nullptr && "IPackageInstaller interface is not initialized.");
+
+    std::string packageId = retrieveInputFromUser<std::string>("Enter the package Id to install: ", false, "");
+    std::string version = retrieveInputFromUser<std::string>("Enter the package version to install : ", false, "");
+    std::string fileLocator = retrieveInputFromUser<std::string>("Enter the file locator : ", false, "");
+    bool metadataFlag = retrieveInputFromUser<bool>("Include metadata? (1 for yes, 0 for no): ", false, false);
+
+    while (metadataFlag)
+    {
+        std::string key = retrieveInputFromUser<std::string>("Enter metadata key: ", false, "");
+        std::string value = retrieveInputFromUser<std::string>("Enter metadata value: ", false, "");
+        // Add the key-value pair to the metadata map or structure
+        // metadata[key] = value;
+        //TODO: Implement metadata handling
+
+        metadataFlag = retrieveInputFromUser<bool>("Add more metadata? (1 for yes, 0 for no): ", false, false);
+    }
+    // Proceed with the installation using the collected information
+}
+void InstallMgrCtrl::handleUninstallRequest()
+{
+    assert(instlCtl != nullptr && "IPackageInstaller interface is not initialized.");
+    std::string packageId = retrieveInputFromUser<std::string>("Enter the package Id to uninstall: ", false, "");
+
+    std::string errorReason;
+
+    uint32_t result = instlCtl->Uninstall(packageId, errorReason);
+
+    if (result == Core::ERROR_NONE)
+    {
+        std::cout << "Uninstallation successful." << std::endl;
+    }
+    else
+    {
+        std::cout << "Uninstallation failed. Reason: " << errorReason << std::endl;
+    }
+}
+void InstallMgrCtrl::handleListPackagesRequest()
+{
+    assert(instlCtl != nullptr && "IPackageInstaller interface is not initialized.");
+
+    using IPackageIterator = RPC::IIteratorType<Exchange::IPackageInstaller::Package, Exchange::ID_PACKAGE_ITERATOR>;
+    IPackageIterator *packageItr;
+    uint32_t result = instlCtl->ListPackages(packageItr);
+
+    if (result == Core::ERROR_NONE)
+    {
+
+        std::cout << "Installed Packages:" << std::endl;
+        Exchange::IPackageInstaller::Package pkg;
+        while (packageItr->Next(pkg))
+        {
+            std::cout << "- " << pkg.packageId << " , Version: " << pkg.version 
+                      << ", State " << pkg.state << ", Digest " << pkg.digest << ", sizeKB: " << pkg.sizeKb << std::endl;
+        }
+        packageItr->Release();
+    }
+    else
+    {
+        std::cout << "Failed to list packages." << std::endl;
+    }
+}
+void InstallMgrCtrl::handlePackageInstallStateRequest()
+{
+    assert(instlCtl != nullptr && "IPackageInstaller interface is not initialized.");
+    std::string packageId = retrieveInputFromUser<std::string>("Enter the package Id to get install state: ", false, "");
+    std::string version = retrieveInputFromUser<std::string>("Enter the package version: ", false, "");
+
+    Exchange::IPackageInstaller::InstallState installState;
+    uint32_t result = instlCtl->PackageState(packageId, version, installState);
+
+    if (result == Core::ERROR_NONE)
+    {
+        std::cout << "Package Install State: " << to_string(installState) << std::endl;
+    }
+    else
+    {
+        std::cout << "Failed to get package install state." << std::endl;
+    }
+}
+
+void InstallMgrCtrl::handlePackageMetadataRequest()
+
+{
+    assert(instlCtl != nullptr && "IPackageInstaller interface is not initialized.");
+    std::string packageId = retrieveInputFromUser<std::string>("Enter the package Id to get metadata: ", false, "");
+    std::string version = retrieveInputFromUser<std::string>("Enter the package version: ", false, "");
+
+    Exchange::RuntimeConfig rtConfig;
+
+    uint32_t result = instlCtl->Config(packageId, version, rtConfig);
+
+    if (result == Core::ERROR_NONE)
+    {
+        std::cout << "Package Metadata retrieved successfully." << std::endl;
+        //TODO: Display or process the metadata as needed
+    }
+    else
+    {
+        std::cout << "Failed to get package metadata." << std::endl;
+    }
+}
+
+void InstallMgrCtrl::handlePackageConfigurationRequest()
+{
+    assert(instlCtl != nullptr && "IPackageInstaller interface is not initialized.");
+    std::string packageId = retrieveInputFromUser<std::string>("Enter the package Id to get metadata: ", false, "");
+    std::string fileLocator = retrieveInputFromUser<std::string>("Enter the file locator: ", false, "");
+    std::string version = retrieveInputFromUser<std::string>("Enter the package version: ", false, "");
+
+    Exchange::RuntimeConfig config;
+
+    uint32_t result = instlCtl->GetConfigForPackage(fileLocator, packageId, version, config);
+
+    if (result == Core::ERROR_NONE)
+    {
+        std::cout << "Package Configuration retrieved successfully." << std::endl;
+        //TODO: Display or process the configuration as needed
+    }
+    else
+    {
+        std::cout << "Failed to get package configuration." << std::endl;
     }
 }

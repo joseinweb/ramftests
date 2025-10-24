@@ -36,20 +36,20 @@ void DownloadMgrControl::displayMenu()
 {
     while (true)
     {
+        std::cout<<"------------------------------------------------------------"<< std::endl;
         std::cout << "Download Manager Control Menu:" << std::endl;
         std::cout << "1. Start Download" << std::endl;
         std::cout << "2. Pause Download" << std::endl;
         std::cout << "3. Resume Download" << std::endl;
         std::cout << "4. Cancel Download" << std::endl;
-        std::cout << "5. Check Download Status" << std::endl;
-        std::cout << "6. Check Download progress" << std::endl;
+        std::cout << "5. Check Download progress" << std::endl;
+        std::cout << "6. Delete Installer file" << std::endl;
         std::cout << "7. Get Storage Details" << std::endl;
         std::cout << "8. Set RateLimit" << std::endl;
         std::cout << "0. Return to Main Menu" << std::endl;
-
+        std::cout<<"------------------------------------------------------------"<< std::endl;
 
         int choice = retrieveInputFromUser<int>("Enter your choice: ", false, 0);
-
 
         switch (choice)
         {
@@ -66,10 +66,10 @@ void DownloadMgrControl::displayMenu()
             handleCancelDownloadRequest();
             break;
         case 5:
-            handleCheckDownloadStatusRequest();
+            handleCheckDownloadProgressRequest();
             break;
         case 6:
-            handleCheckDownloadProgressRequest();
+            handleDeleteInstallerFileRequest();
             break;
         case 7:
             handleGetStorageDetailsRequest();
@@ -91,7 +91,7 @@ void DownloadMgrControl::handleStartDownloadRequest()
     std::string url = retrieveInputFromUser<std::string>("Enter Download URL: ", false, "");
     bool highPriority = retrieveInputFromUser<bool>("Is this a high priority download? (true/false): ", true, false);
     int maxSpeed = retrieveInputFromUser<int>("Enter maximum download speed (KB/s, 0 for unlimited): ", true, 0);
-    int retries  = retrieveInputFromUser<int>("Enter number of retries: default 2 ", true, 2);
+    int retries = retrieveInputFromUser<int>("Enter number of retries: default 2 ", true, 2);
 
     Exchange::IPackageDownloader::Options params;
     params.priority = highPriority;
@@ -112,22 +112,98 @@ void DownloadMgrControl::handleStartDownloadRequest()
 
 void DownloadMgrControl::handlePauseDownloadRequest()
 {
+    assert(dwldCtl != nullptr && "IPackageDownloader interface is not initialized.");
+
+    std::string downloadId = retrieveInputFromUser<std::string>("Enter Download ID to pause: ", false, "");
+    uint32_t result = dwldCtl->Pause(downloadId);
+    if (result != Core::ERROR_NONE)
+    {
+        std::cerr << "Failed to pause download: " << downloadId << std::endl;
+        return;
+    }
+    std::cout << "Download paused successfully. Download ID: " << downloadId << std::endl;
 }
+
 void DownloadMgrControl::handleResumeDownloadRequest()
 {
+    assert(dwldCtl != nullptr && "IPackageDownloader interface is not initialized.");
+
+    std::string downloadId = retrieveInputFromUser<std::string>("Enter Download ID to resume: ", false, "");
+    uint32_t result = dwldCtl->Resume(downloadId);
+    if (result != Core::ERROR_NONE)
+    {
+        std::cerr << "Failed to resume download: " << downloadId << std::endl;
+        return;
+    }
+    std::cout << "Download resumed successfully. Download ID: " << downloadId << std::endl;
 }
 void DownloadMgrControl::handleCancelDownloadRequest()
 {
+    assert(dwldCtl != nullptr && "IPackageDownloader interface is not initialized.");
+
+    std::string downloadId = retrieveInputFromUser<std::string>("Enter Download ID to cancel: ", false, "");
+    uint32_t result = dwldCtl->Cancel(downloadId);
+    if (result != Core::ERROR_NONE)
+    {
+        std::cerr << "Failed to cancel download: " << downloadId << std::endl;
+        return;
+    }
+    std::cout << "Download canceled successfully. Download ID: " << downloadId << std::endl;
 }
-void DownloadMgrControl::handleCheckDownloadStatusRequest()
-{
-}
+
 void DownloadMgrControl::handleCheckDownloadProgressRequest()
 {
+    assert(dwldCtl != nullptr && "IPackageDownloader interface is not initialized.");
+
+    std::string downloadId = retrieveInputFromUser<std::string>("Enter Download ID to check progress: ", false, "");
+    Exchange::IPackageDownloader::ProgressInfo progress;
+    uint32_t result = dwldCtl->Progress(downloadId, progress);
+    if (result != Core::ERROR_NONE)
+    {
+        std::cerr << "Failed to get download progress: " << downloadId << std::endl;
+        return;
+    }
+    std::cout << "Download progress for ID " << downloadId << ": " << progress.progress << "% completed." << std::endl;
+}
+void DownloadMgrControl::handleDeleteInstallerFileRequest()
+{
+    assert(dwldCtl != nullptr && "IPackageDownloader interface is not initialized.");
+
+    std::string downloadId = retrieveInputFromUser<std::string>("Enter File to be deleted: ", false, "");
+    uint32_t result = dwldCtl->Delete(downloadId);
+    if (result != Core::ERROR_NONE)
+    {
+        std::cerr << "Failed to delete installer file : " << downloadId << std::endl;
+        return;
+    }
+    std::cout << "Installer file deleted successfully : " << downloadId << std::endl;
 }
 void DownloadMgrControl::handleGetStorageDetailsRequest()
 {
+    assert(dwldCtl != nullptr && "IPackageDownloader interface is not initialized.");
+
+    std::string quotaKb, usedKb;
+    uint32_t result = dwldCtl->GetStorageDetails(quotaKb, usedKb);
+    if (result != Core::ERROR_NONE)
+    {
+        std::cerr << "Failed to get storage details." << std::endl;
+        return;
+    }
+    std::cout << "Storage Details: Total - " << quotaKb
+              << " bytes, Used - " << usedKb
+              << " bytes, Free - " << (std::stoll(quotaKb) - std::stoll(usedKb)) << " bytes." << std::endl;
 }
 void DownloadMgrControl::handleSetRateLimitRequest()
 {
+    assert(dwldCtl != nullptr && "IPackageDownloader interface is not initialized.");
+
+    std::string downloadId = retrieveInputFromUser<std::string>("Enter Download ID to set rate limit: ", false, "");
+    uint32_t rateLimit = retrieveInputFromUser<uint32_t>("Enter rate limit (bytes per second): ", false, 0);
+    uint32_t result = dwldCtl->RateLimit(downloadId, rateLimit);
+    if (result != Core::ERROR_NONE)
+    {
+        std::cerr << "Failed to set rate limit for download: " << downloadId << std::endl;
+        return;
+    }
+    std::cout << "Rate limit set successfully for Download ID: " << downloadId << std::endl;
 }

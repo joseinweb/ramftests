@@ -8,6 +8,10 @@ class PkgMgrControl : public MgrCtrl
 private:
     Exchange::IPackageHandler *pkgCtrl;
 
+    void handleLockPackageRequest();
+    void handleUnlockPackageRequest();
+    void handleGetLockInfoRequest();
+
 public:
     PkgMgrControl(/* args */);
     ~PkgMgrControl();

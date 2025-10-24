@@ -41,8 +41,8 @@ void AppMgrControl::displayMenu()
     assert(appManager != nullptr && "AppManager interface is not initialized.");
     while (true)
     {
+        std::cout << "------------------------------------------------------------" << std::endl;
 
-        std::cout << "--------------------------" << std::endl;
         std::cout << "App Manager Menu:" << std::endl;
         std::cout << "0. Go back to main menu" << std::endl;
         std::cout << "1. List Installed Applications" << std::endl;
@@ -65,10 +65,10 @@ void AppMgrControl::displayMenu()
         std::cout << "18. Get Max Hibernated applications" << std::endl;
         std::cout << "19. Get Min Hibernated flash usage" << std::endl;
         std::cout << "20. Get Max inactive RAM usage" << std::endl;
-        std::cout << "--------------------------" << std::endl;
 
         int choice = retrieveInputFromUser<int>("Enter your choice: ", false, 0);
-
+        std::cout << "------------------------------------------------------------" << std::endl;
+        
         switch (choice)
         {
         case 1:
@@ -208,7 +208,6 @@ void AppMgrControl::handleGetApplicationMetadataRequest()
 
     std::string appId;
     appId = retrieveInputFromUser<std::string>("Enter the App ID to get metadata: ", false, "");
-
 
     std::string metadataKey;
     metadataKey = retrieveInputFromUser<std::string>("Enter the metadata key to retrieve: ", false, "");

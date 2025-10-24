@@ -3,6 +3,29 @@
 #include "WPEFramework/interfaces/IAppPackageManager.h"
 #include "MgrControl.hpp"
 
+inline std::string to_string(Exchange::IPackageInstaller::InstallState state)
+{
+    switch (state)
+    {
+    case Exchange::IPackageInstaller::InstallState::INSTALLING:
+        return "INSTALLING";
+    case Exchange::IPackageInstaller::InstallState::INSTALLATION_BLOCKED:
+        return "INSTALLATION_BLOCKED";
+    case Exchange::IPackageInstaller::InstallState::INSTALLED:
+        return "INSTALLED";
+    case Exchange::IPackageInstaller::InstallState::INSTALL_FAILURE:
+        return "INSTALL_FAILURE";
+    case Exchange::IPackageInstaller::InstallState::UNINSTALLING:
+        return "UNINSTALLING";
+    case Exchange::IPackageInstaller::InstallState::UNINSTALL_FAILURE:
+        return "UNINSTALL_FAILURE";
+    case Exchange::IPackageInstaller::InstallState::UNINSTALLED:
+        return "UNINSTALLED";
+    default:
+        return "UNKNOWN";
+    }
+}
+
 class PkgInstallEvtHandler : public Exchange::IPackageInstaller::INotification
 {
 public:
@@ -37,6 +60,13 @@ class InstallMgrCtrl : public MgrCtrl
 private:
     Exchange::IPackageInstaller *instlCtl;
     shared_ptr<Exchange::IPackageInstaller::INotification> instlEventHandler = nullptr;
+
+    void handleStartInstallRequest();
+    void handleUninstallRequest();
+    void handleListPackagesRequest();
+    void handlePackageInstallStateRequest();
+    void handlePackageMetadataRequest();
+    void handlePackageConfigurationRequest();
 
 public:
     InstallMgrCtrl();

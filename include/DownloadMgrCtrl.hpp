@@ -49,8 +49,8 @@ private:
     void handlePauseDownloadRequest();
     void handleResumeDownloadRequest();
     void handleCancelDownloadRequest();
-    void handleCheckDownloadStatusRequest();
     void handleCheckDownloadProgressRequest();
+    void handleDeleteInstallerFileRequest();
     void handleGetStorageDetailsRequest();
     void handleSetRateLimitRequest();
 
