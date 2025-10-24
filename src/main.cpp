@@ -32,8 +32,8 @@ int processUserCommands() {
                 choice = -1; // Reset choice to avoid exiting
                 break;
             case 3:
-                cout << "Moving to PackageManager related functions..." << endl;
-                // Show package manager menu
+                thunderBridge.showPackageManagerMenu();
+                choice = -1; // Reset choice to avoid exiting
                 break;
             case 0:
                 cout << "Exiting..." << endl;

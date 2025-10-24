@@ -3,6 +3,9 @@
 
 #include "WPEFramework/interfaces/IPackageManager.h"
 #include "AppMgrControl.hpp"
+#include "PkgMgrControl.hpp"
+#include "DownloadMgrCtrl.hpp"
+#include "InstallMgrCtrl.hpp"
 
 
 class ThunderBridge {
@@ -15,9 +18,13 @@ public:
     void deinitialize();
     void printPluginStatus(std::string pluginName) ;
     void showAppManagerMenu();
+    void showPackageManagerMenu();
+
+    bool initializeManager( MgrCtrl& manager);
 
 private:
-
-    Core::ProxyType<RPC::CommunicatorClient> mClient;
     unique_ptr<AppMgrControl> mAppMgrControl;
+    unique_ptr<PkgMgrControl> mPkgMgrControl;
+    unique_ptr<DownloadMgrControl> mDownloadMgrControl;
+    unique_ptr<InstallMgrCtrl> mInstallMgrCtrl;
 };

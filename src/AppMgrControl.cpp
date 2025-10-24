@@ -28,15 +28,12 @@ bool AppMgrControl::initialize(Core::ProxyType<RPC::CommunicatorClient> &client)
 
     appMgrEvtHandler = std::make_shared<AppManagerEventHandler>();
     appManager->Register(appMgrEvtHandler.get());
-
+    client.Release();
     return true;
 }
-void AppMgrControl::checkPluginStatus()
+bool AppMgrControl::checkPluginStatus()
 {
-    if (appManager != nullptr)
-    {
-        std::cout << "AppManager is initialized." << std::endl;
-    }
+    return (appManager != nullptr);
 }
 void AppMgrControl::displayMenu()
 {

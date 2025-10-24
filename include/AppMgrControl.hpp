@@ -141,6 +141,6 @@ public:
     AppMgrControl(/* args */);
     ~AppMgrControl();
     bool initialize(Core::ProxyType<RPC::CommunicatorClient> &client) override;
-    void checkPluginStatus() override;
+    bool checkPluginStatus() override;
     void displayMenu() override;
 };
