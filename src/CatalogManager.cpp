@@ -58,15 +58,23 @@ bool CatalogManager::retrieveApplicationDetails()
         Json::CharReaderBuilder builder;
         Json::Value root;
         JSONCPP_STRING err;
+        Json::FastWriter writer;
         const std::unique_ptr<Json::CharReader> reader(builder.newCharReader());
         if (reader->parse(catalogData.c_str(), catalogData.c_str() + catalogData.size(), &root, &err))
         {
-            std::cout << " Main Data: " << root["header"].toStyledString() << std::endl;
-            std::cout << " Requirements: " << root["requirements"].toStyledString() << std::endl;
-            std::cout << " Maintainer: " << root["maintainer"].toStyledString() << std::endl;
-            std::cout << " Versions: " << root["versions"].toStyledString() << std::endl;
+            Json::Value header = root["header"];
+            Json::Value requirements = root["requirements"];
+            Json::Value maintainer = root["maintainer"];
+            Json::Value versions = root["versions"];
+
+            std::cout << "[Application details]: " << writer.write(header) << std::endl;
+            std::cout << "[Requirements]: " << writer.write(requirements) << std::endl;
+            std::cout << "[Maintainer]: " << writer.write(maintainer) << std::endl;
+            std::cout << "[Versions]: " << writer.write(versions) << std::endl;
+            return true;
         }
     }
+    return false;
 }
 
 void CatalogManager::fetchCatalog(const std::string &url, bool addCredentials)
@@ -115,9 +123,9 @@ bool CatalogManager::retrieveCatalog()
     if (configUrl.empty() || platformType.empty() || apiKey.empty())
     {
 
-        configUrl = retrieveInputFromUser<std::string>("Enter Catalog Config URL: ", false, "");
-        platformType = retrieveInputFromUser<std::string>("Enter Platform Type:  ", false, "");
-        apiKey = retrieveInputFromUser<std::string>("Enter Platform Key:  ", false, "");
+        configUrl = retrieveInputFromUser<std::string>("Enter Catalog Config URL: ", true, "https://dac.config.dev.fireboltconnect.com/configuration/cpe.json");
+        platformType = retrieveInputFromUser<std::string>("Enter Platform Type:  ", true, "ah212");
+        apiKey = retrieveInputFromUser<std::string>("Enter Platform Key:  ", true, "1.0.0-97dc2fa24dbc788206db90934f9a2773efccebc2-dbg");
     }
     if (initialize())
     {
@@ -134,7 +142,7 @@ bool CatalogManager::retrieveCatalog()
     return true;
 }
 // https://dac.dev.fireboltconnect.com/apps?platformName=rpi4&firmwareVer=1.0.0-b34e9a38a2675d4cd02cf89f7fc72874a4c99eb0-dbg%27;echo
-bool CatalogManager::retrieveCatalogFromServer(const std::string& appId, const std::string& version)
+bool CatalogManager::retrieveCatalogFromServer(const std::string &appId, const std::string &version)
 {
 
     catalogData.clear();

@@ -32,6 +32,7 @@ bool ThunderBridge::initializeManager(MgrCtrl &manager)
     {
         return manager.initialize(client);
     }
+    return false;
 }
 bool ThunderBridge::initialize()
 {

@@ -8,30 +8,39 @@
 
 #include <memory>
 #include <iostream>
+#include <sstream>
 
 using namespace WPEFramework;
 using namespace std;
 
 template <typename T>
-
-inline T retrieveInputFromUser(const std::string& prompt, bool allowEmpty, T defaultValue)
+inline T retrieveInputFromUser(const std::string &prompt, bool allowEmpty, T defaultValue)
 {
-    std::cout << prompt;
-    T value;
+    T value = defaultValue;
 
-    if (!(std::cin >> value)) {
-        if (allowEmpty) {
-            std::cin.clear(); // clear error flags
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // discard invalid input
-            return defaultValue;
-        } else {
-            // If empty input is not allowed, keep prompting
-            while (!(std::cin >> value)) {
-                std::cin.clear();
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                std::cout << "Invalid input. " << prompt;
-            }
+    std::string input;
+
+    std::cout << prompt << "Default (" << defaultValue << "): ";
+    std::getline(std::cin, input);
+
+    if (input.empty() && allowEmpty)
+    {
+        return defaultValue;
+    }
+
+    while (true)
+    {
+        std::istringstream iss(input);
+        if (!(iss >> value))
+        {
+            std::cout << "Invalid input. Please try again: ";
+            std::getline(std::cin, input);
+            iss.clear();
+            iss.str(input);
+            continue;
         }
+        else
+            break;
     }
     return value;
 }
