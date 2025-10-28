@@ -460,28 +460,22 @@ void AppMgrControl::handleIsAppInstalledRequest()
 void AppMgrControl::handleLoadedAppsRequest()
 {
     assert(appManager != nullptr && "AppManager interface is not initialized.");
-    std::string loadedAppsJson;
 
-    uint32_t result = appManager->GetLoadedApps(loadedAppsJson);
+    using ILoadedAppInfoIterator = Exchange::IAppManager::ILoadedAppInfoIterator;
+
+    ILoadedAppInfoIterator * iterator = nullptr;
+
+    uint32_t result = appManager->GetLoadedApps(iterator);
     if (result == Core::ERROR_NONE)
     {
-        Json::CharReaderBuilder builder;
-        Json::Value root;
-        JSONCPP_STRING err;
+        Exchange::IAppManager::LoadedAppInfo appInfo;
 
-        const std::unique_ptr<Json::CharReader> reader(builder.newCharReader());
-        if (!reader->parse(loadedAppsJson.c_str(), loadedAppsJson.c_str() + loadedAppsJson.size(), &root, &err))
+        while (iterator->Next(appInfo))
         {
-            std::cerr << "Failed to parse loaded applications JSON: " << err << std::endl;
-            return;
+            std::cout << " - " << appInfo.appId << " (appInstanceId: " << appInfo.appInstanceId << ")"
+                      << " activeSessionId: " << appInfo.activeSessionId << " Current state: " << mapLifeCycleStateToString(appInfo.currentLifecycleState) << std::endl;
         }
-
-        std::cout << "Loaded Applications:" << std::endl;
-        for (const auto &app : root)
-        {
-            std::cout << " - " << app["appId"].asString() << " (appInstanceId: " << app["appInstanceId"].asString() << ")"
-                      << " activeSessionId: " << app["activeSessionId"].asString() << " Current state: " << mapLifeCycleStateToString(static_cast<Exchange::IAppManager::AppLifecycleState>(app["currentLifecycleState"].asInt())) << std::endl;
-        }
+        iterator->Release();
     }
     else
     {
