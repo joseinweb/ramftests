@@ -3,6 +3,22 @@
 #include "WPEFramework/interfaces/IAppPackageManager.h"
 #include "MgrControl.hpp"
 
+inline std::string mapFailureReason(Exchange::IPackageInstaller::FailReason &type)
+{
+    switch (type)
+    {
+    case Exchange::IPackageInstaller::FailReason::SIGNATURE_VERIFICATION_FAILURE:
+        return "SIGNATURE_VERIFICATION_FAILURE";
+    case Exchange::IPackageInstaller::FailReason::PACKAGE_MISMATCH_FAILURE:
+        return "PACKAGE_MISMATCH_FAILURE";
+    case Exchange::IPackageInstaller::FailReason::INVALID_METADATA_FAILURE:
+        return "INVALID_METADATA_FAILURE";
+    case Exchange::IPackageInstaller::FailReason::PERSISTENCE_FAILURE:
+        return "PERSISTENCE_FAILURE";
+    default:
+        return "NONE";
+    }
+}
 inline std::string to_string(Exchange::IPackageInstaller::InstallState state)
 {
     switch (state)
@@ -34,25 +50,9 @@ public:
     {
         cout << "Installation Status: " << jsonresponse << endl;
     }
-    uint32_t AddRef() const
-    {
-        cout << " Hey I (PkgInstallEvtHandler::AddRef) am getting called  " << endl;
-        return Core::ERROR_NONE;
-    }
-    uint32_t Release() const
-    {
-        cout << " Hey I (PkgInstallEvtHandler::Release) am getting called " << endl;
-        return Core::ERROR_NONE;
-    }
-    void *QueryInterface(const uint32_t interfaceNumber)
-    {
-        cout << " Hey I (PkgInstallEvtHandler::QueryInterface) am getting called " << endl;
-        if (interfaceNumber == Exchange::IPackageInstaller::INotification::ID)
-        {
-            return static_cast<Exchange::IPackageInstaller::INotification *>(this);
-        }
-        return nullptr;
-    }
+    BEGIN_INTERFACE_MAP(PkgInstallEvtHandler)
+    INTERFACE_ENTRY(Exchange::IPackageInstaller::INotification)
+    END_INTERFACE_MAP
 };
 
 class InstallMgrCtrl : public MgrCtrl
@@ -75,4 +75,3 @@ public:
     bool checkPluginStatus() override;
     void displayMenu() override;
 };
-

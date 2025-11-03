@@ -18,25 +18,10 @@ public:
         }
         packageInfo->Release();
     }
-    uint32_t AddRef() const
-    {
-        cout << " Hey I (PkgDownloaderEvtHandler::AddRef) am getting called  " << endl;
-        return Core::ERROR_NONE;
-    }
-    uint32_t Release() const
-    {
-        cout << " Hey I (PkgDownloaderEvtHandler::Release) am getting called " << endl;
-        return Core::ERROR_NONE;
-    }
-    void *QueryInterface(const uint32_t interfaceNumber)
-    {
-        cout << " Hey I (PkgDownloaderEvtHandler::QueryInterface) am getting called " << endl;
-        if (interfaceNumber == Exchange::IPackageDownloader::INotification::ID)
-        {
-            return static_cast<Exchange::IPackageDownloader::INotification *>(this);
-        }
-        return nullptr;
-    }
+    BEGIN_INTERFACE_MAP(PkgDownloaderEvtHandler)
+    INTERFACE_ENTRY(Exchange::IPackageDownloader::INotification)
+    END_INTERFACE_MAP
+
 };
 
 class DownloadMgrControl : public MgrCtrl

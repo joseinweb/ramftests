@@ -72,25 +72,9 @@ public:
 
         std::cout << "App Unloaded: " << appId << " Instance ID: " << appInstanceId << std::endl;
     }
-    uint32_t AddRef() const
-    {
-        cout << " Hey I (AppManagerEventHandler::AddRef) am getting called  " << endl;
-        return Core::ERROR_NONE;
-    }
-    uint32_t Release() const
-    {
-        cout << " Hey I (AppManagerEventHandler::Release) am getting called " << endl;
-        return Core::ERROR_NONE;
-    }
-    void *QueryInterface(const uint32_t interfaceNumber)
-    {
-        cout << " Hey I (AppManagerEventHandler::QueryInterface) am getting called " << endl;
-        if (interfaceNumber == Exchange::IAppManager::INotification::ID)
-        {
-            return static_cast<Exchange::IAppManager::INotification *>(this);
-        }
-        return nullptr;
-    }
+    BEGIN_INTERFACE_MAP(AppManagerEventHandler)
+    INTERFACE_ENTRY(Exchange::IAppManager::INotification)
+    END_INTERFACE_MAP
 };
 
 enum class CLOSURE_REASON

@@ -39,7 +39,7 @@ void InstallMgrCtrl::displayMenu()
 {
     while (true)
     {
-        std::cout<<"------------------------------------------------------------"<< std::endl;
+        std::cout << "------------------------------------------------------------" << std::endl;
         std::cout << "Install Manager Control Menu:" << std::endl;
         std::cout << "1. Install Package" << std::endl;
         std::cout << "2. Uninstall Package" << std::endl;
@@ -50,7 +50,7 @@ void InstallMgrCtrl::displayMenu()
         std::cout << "0. Return to Main Menu" << std::endl;
 
         int choice = retrieveInputFromUser<int>("Enter your choice: ", false, 0);
-        std::cout<<"------------------------------------------------------------"<< std::endl;
+        std::cout << "------------------------------------------------------------" << std::endl;
 
         switch (choice)
         {
@@ -88,19 +88,34 @@ void InstallMgrCtrl::handleStartInstallRequest()
     std::string packageId = retrieveInputFromUser<std::string>("Enter the package Id to install: ", false, "");
     std::string version = retrieveInputFromUser<std::string>("Enter the package version to install : ", false, "");
     std::string fileLocator = retrieveInputFromUser<std::string>("Enter the file locator : ", false, "");
-    bool metadataFlag = retrieveInputFromUser<bool>("Include metadata? (1 for yes, 0 for no): ", false, false);
 
-    while (metadataFlag)
+    // "params": {"packageId": "com.rdk.app.wpebrowser_2.38", "version": "2025", "fileLocator": "/opt/data/com.rdk.app.wpebrowser_2.38_1.0.0-b34e9a38a2675d4cd02cf89f7fc72874a4c99eb0-dbg.tgz",
+    //"additionalMetadata": [{"name": "appName", "value": "WPEBrowser_2.38"}, {"name": "category", "value": "Application"}, {"name": "type", "value": "application/dac.native"}]}}
+
+    std::string appName = retrieveInputFromUser<std::string>("Enter appname : ", false, "");
+    std::string category = retrieveInputFromUser<std::string>("Enter category : ", true, "Application");
+    std::string type = retrieveInputFromUser<std::string>("Enter type : ", true, "application/dac.native");
+
+    std::list<Exchange::IPackageInstaller::KeyValue> additionalMetadata;
+    additionalMetadata.push_back({"appName", appName});
+    additionalMetadata.push_back({"category", category});
+    additionalMetadata.push_back({"type", type});
+
+    // using IKeyValueIterator = RPC::IIteratorType<Exchange::IPackageInstaller::KeyValue, Exchange::ID_PACKAGE_KEY_VALUE_ITERATOR>;
+    // IKeyValueIterator* metadataIterator = Core::Service<IKeyValueIterator>::Create<IKeyValueIterator>(additionalMetadata);
+    uint32_t result = Core::ERROR_NONE;
+    Exchange::IPackageInstaller::FailReason failReason;
+    // uint32_t result = instlCtl->Install(packageId, version, metadataIterator,fileLocator,failReason);
+    if (result == Core::ERROR_NONE)
     {
-        std::string key = retrieveInputFromUser<std::string>("Enter metadata key: ", false, "");
-        std::string value = retrieveInputFromUser<std::string>("Enter metadata value: ", false, "");
-        // Add the key-value pair to the metadata map or structure
-        // metadata[key] = value;
-        //TODO: Implement metadata handling
-
-        metadataFlag = retrieveInputFromUser<bool>("Add more metadata? (1 for yes, 0 for no): ", false, false);
+        std::cout << "Installation started successfully." << std::endl;
     }
-    // Proceed with the installation using the collected information
+    else
+    {
+        std::cout << "Installation failed to start. Reason: " << mapFailureReason(failReason) << std::endl;
+    }
+
+    //metadataIterator->Release();
 }
 void InstallMgrCtrl::handleUninstallRequest()
 {
@@ -135,7 +150,7 @@ void InstallMgrCtrl::handleListPackagesRequest()
         Exchange::IPackageInstaller::Package pkg;
         while (packageItr->Next(pkg))
         {
-            std::cout << "- " << pkg.packageId << " , Version: " << pkg.version 
+            std::cout << "- " << pkg.packageId << " , Version: " << pkg.version
                       << ", State " << pkg.state << ", Digest " << pkg.digest << ", sizeKB: " << pkg.sizeKb << std::endl;
         }
         packageItr->Release();
@@ -178,7 +193,7 @@ void InstallMgrCtrl::handlePackageMetadataRequest()
     if (result == Core::ERROR_NONE)
     {
         std::cout << "Package Metadata retrieved successfully." << std::endl;
-        //TODO: Display or process the metadata as needed
+        // TODO: Display or process the metadata as needed
     }
     else
     {
@@ -200,7 +215,7 @@ void InstallMgrCtrl::handlePackageConfigurationRequest()
     if (result == Core::ERROR_NONE)
     {
         std::cout << "Package Configuration retrieved successfully." << std::endl;
-        //TODO: Display or process the configuration as needed
+        // TODO: Display or process the configuration as needed
     }
     else
     {
