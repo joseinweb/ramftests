@@ -85,6 +85,7 @@ void ThunderBridge::printPluginStatus(std::string pluginName)
 
     cout << "Plugin Status for app manager: " << (mAppMgrControl ? (mAppMgrControl->checkPluginStatus() ? "Active" : "Not Active") : "AppManager is not initialized.") << endl;
     cout << "Plugin Status for package manager: " << (mPkgMgrControl ? (mPkgMgrControl->checkPluginStatus() ? "Active" : "Not Active") : "PkgManager is not initialized.") << endl;
+    cout <<"Plugin status for download manager: " << (mDownloadMgrControl ? (mDownloadMgrControl->checkPluginStatus() ? "Active" : "Not Active") : "DownloadManager is not initialized.") << endl;
 }
 void ThunderBridge::showAppManagerMenu()
 {

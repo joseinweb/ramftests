@@ -473,7 +473,7 @@ void AppMgrControl::handleLoadedAppsRequest()
         while (iterator->Next(appInfo))
         {
             std::cout << " - " << appInfo.appId << " (appInstanceId: " << appInfo.appInstanceId << ")"
-                      << " activeSessionId: " << appInfo.activeSessionId << " Current state: " << mapLifeCycleStateToString(appInfo.currentLifecycleState) << std::endl;
+                      << " activeSessionId: " << appInfo.activeSessionId << " Current state: " << mapLifeCycleStateToString(appInfo.lifecycleState) << std::endl;
         }
         iterator->Release();
     }

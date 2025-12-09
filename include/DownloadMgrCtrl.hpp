@@ -1,22 +1,16 @@
 #pragma once
 #include "common.hpp"
-#include "WPEFramework/interfaces/IAppPackageManager.h"
+#include "WPEFramework/interfaces/IDownloadManager.h"
 #include "MgrControl.hpp"
 
-class PkgDownloaderEvtHandler : public Exchange::IPackageDownloader::INotification
+class DownloaderEvtHandler : public Exchange::IDownloadManager::INotification
 {
-    using IPackageInfoIterator = RPC::IIteratorType<Exchange::IPackageDownloader::PackageInfo, Exchange::ID_PACKAGE_INFO_ITERATOR>;
 
 public:
-    ~PkgDownloaderEvtHandler() {}
-    void OnAppDownloadStatus(IPackageInfoIterator *const packageInfo)
+    ~DownloaderEvtHandler() {}
+    void OnAppDownloadStatus(const std::string & downloadStatus)
     {
-        Exchange::IPackageDownloader::PackageInfo info;
-        while (packageInfo->Next(info))
-        {
-            cout << "Package: " << info.downloadId << ", Locator: " << info.fileLocator << ", Reason : " << info.reason << endl;
-        }
-        packageInfo->Release();
+        cout << "[OnAppDownloadStatus] Download Status: " << downloadStatus << endl;
     }
     uint32_t AddRef() const
     {
@@ -31,9 +25,9 @@ public:
     void *QueryInterface(const uint32_t interfaceNumber)
     {
         cout << " Hey I (PkgDownloaderEvtHandler::QueryInterface) am getting called " << endl;
-        if (interfaceNumber == Exchange::IPackageDownloader::INotification::ID)
+        if (interfaceNumber == Exchange::IDownloadManager::INotification::ID)
         {
-            return static_cast<Exchange::IPackageDownloader::INotification *>(this);
+            return static_cast<Exchange::IDownloadManager::INotification *>(this);
         }
         return nullptr;
     }
@@ -42,8 +36,8 @@ public:
 class DownloadMgrControl : public MgrCtrl
 {
 private:
-    Exchange::IPackageDownloader *dwldCtl;
-    shared_ptr<Exchange::IPackageDownloader::INotification> dwldEventHandler = nullptr;
+    Exchange::IDownloadManager *dwldCtl;
+    shared_ptr<Exchange::IDownloadManager::INotification> dwldEventHandler = nullptr;
 
     void handleStartDownloadRequest();
     void handlePauseDownloadRequest();
