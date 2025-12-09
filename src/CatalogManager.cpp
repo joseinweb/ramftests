@@ -58,7 +58,8 @@ bool CatalogManager::retrieveApplicationDetails()
         Json::CharReaderBuilder builder;
         Json::Value root;
         JSONCPP_STRING err;
-        Json::FastWriter writer;
+        Json::StreamWriterBuilder writerBuilder;
+
         const std::unique_ptr<Json::CharReader> reader(builder.newCharReader());
         if (reader->parse(catalogData.c_str(), catalogData.c_str() + catalogData.size(), &root, &err))
         {
@@ -67,10 +68,11 @@ bool CatalogManager::retrieveApplicationDetails()
             Json::Value maintainer = root["maintainer"];
             Json::Value versions = root["versions"];
 
-            std::cout << "[Application details]: " << writer.write(header) << std::endl;
-            std::cout << "[Requirements]: " << writer.write(requirements) << std::endl;
-            std::cout << "[Maintainer]: " << writer.write(maintainer) << std::endl;
-            std::cout << "[Versions]: " << writer.write(versions) << std::endl;
+
+            std::cout << "[Application details]: " << Json::writeString(writerBuilder, header) << std::endl;
+            std::cout << "[Requirements]: " << Json::writeString(writerBuilder, requirements) << std::endl;
+            std::cout << "[Maintainer]: " << Json::writeString(writerBuilder, maintainer) << std::endl;
+            std::cout << "[Versions]: " << Json::writeString(writerBuilder, versions) << std::endl;
             return true;
         }
     }
@@ -123,7 +125,7 @@ bool CatalogManager::retrieveCatalog()
     if (configUrl.empty() || platformType.empty() || apiKey.empty())
     {
 
-        configUrl = retrieveInputFromUser<std::string>("Enter Catalog Config URL: ", true, "https://dac.config.dev.fireboltconnect.com/configuration/cpe.json");
+        configUrl = retrieveInputFromUser<std::string>("Enter Catalog Config URL: ", true, "https://dac.config.dev.rdkinnovation.com/configuration/cpe.json");
         platformType = retrieveInputFromUser<std::string>("Enter Platform Type:  ", true, "ah212");
         apiKey = retrieveInputFromUser<std::string>("Enter Platform Key:  ", true, "1.0.0-97dc2fa24dbc788206db90934f9a2773efccebc2-dbg");
     }

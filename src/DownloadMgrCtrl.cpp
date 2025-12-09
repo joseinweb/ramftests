@@ -15,14 +15,14 @@ DownloadMgrControl::~DownloadMgrControl()
 }
 bool DownloadMgrControl::initialize(Core::ProxyType<RPC::CommunicatorClient> &client)
 {
-    dwldCtl = client->Open<Exchange::IPackageDownloader>("org.rdk.PackageManagerRDKEMS");
+    dwldCtl = client->Open<Exchange::IDownloadManager>("org.rdk.DownloadManager");
     if (dwldCtl == nullptr)
     {
-        std::cerr << "Failed to open IPackageDownloader interface." << std::endl;
+        std::cerr << "Failed to open IDownloadManager interface." << std::endl;
         return false;
     }
 
-    dwldEventHandler = std::make_shared<PkgDownloaderEvtHandler>();
+    dwldEventHandler = std::make_shared<DownloaderEvtHandler>();
     dwldCtl->Register(dwldEventHandler.get());
     client.Release();
     return true;
@@ -93,12 +93,13 @@ void DownloadMgrControl::handleStartDownloadRequest()
     int maxSpeed = retrieveInputFromUser<int>("Enter maximum download speed (KB/s, 0 for unlimited): ", true, 0);
     int retries = retrieveInputFromUser<int>("Enter number of retries: default 2 ", true, 2);
 
-    Exchange::IPackageDownloader::Options params;
+    Exchange::IDownloadManager::Options params;
     params.priority = highPriority;
     params.rateLimit = maxSpeed;
     params.retries = retries;
 
-    Exchange::IPackageDownloader::DownloadId downloadId;
+
+    std::string downloadId;
 
     // Call the appropriate method on dwldCtl to start the download
     uint32_t result = dwldCtl->Download(url, params, downloadId);
@@ -107,12 +108,12 @@ void DownloadMgrControl::handleStartDownloadRequest()
         std::cerr << "Failed to start download: " << url << std::endl;
         return;
     }
-    std::cout << "Download started successfully. Download ID: " << downloadId.downloadId << std::endl;
+    std::cout << "Download started successfully. Download ID: " << downloadId << std::endl;
 }
 
 void DownloadMgrControl::handlePauseDownloadRequest()
 {
-    assert(dwldCtl != nullptr && "IPackageDownloader interface is not initialized.");
+    assert(dwldCtl != nullptr && "IDownloadManager interface is not initialized.");
 
     std::string downloadId = retrieveInputFromUser<std::string>("Enter Download ID to pause: ", false, "");
     uint32_t result = dwldCtl->Pause(downloadId);
@@ -126,7 +127,7 @@ void DownloadMgrControl::handlePauseDownloadRequest()
 
 void DownloadMgrControl::handleResumeDownloadRequest()
 {
-    assert(dwldCtl != nullptr && "IPackageDownloader interface is not initialized.");
+    assert(dwldCtl != nullptr && "IDownloadManager interface is not initialized.");
 
     std::string downloadId = retrieveInputFromUser<std::string>("Enter Download ID to resume: ", false, "");
     uint32_t result = dwldCtl->Resume(downloadId);
@@ -139,7 +140,7 @@ void DownloadMgrControl::handleResumeDownloadRequest()
 }
 void DownloadMgrControl::handleCancelDownloadRequest()
 {
-    assert(dwldCtl != nullptr && "IPackageDownloader interface is not initialized.");
+    assert(dwldCtl != nullptr && "IDownloadManager interface is not initialized.");
 
     std::string downloadId = retrieveInputFromUser<std::string>("Enter Download ID to cancel: ", false, "");
     uint32_t result = dwldCtl->Cancel(downloadId);
@@ -153,21 +154,21 @@ void DownloadMgrControl::handleCancelDownloadRequest()
 
 void DownloadMgrControl::handleCheckDownloadProgressRequest()
 {
-    assert(dwldCtl != nullptr && "IPackageDownloader interface is not initialized.");
+    assert(dwldCtl != nullptr && "IDownloadManager interface is not initialized.");
 
     std::string downloadId = retrieveInputFromUser<std::string>("Enter Download ID to check progress: ", false, "");
-    Exchange::IPackageDownloader::ProgressInfo progress;
-    uint32_t result = dwldCtl->Progress(downloadId, progress);
+    uint8_t  percent;
+    uint32_t result = dwldCtl->Progress(downloadId, percent);
     if (result != Core::ERROR_NONE)
     {
         std::cerr << "Failed to get download progress: " << downloadId << std::endl;
         return;
     }
-    std::cout << "Download progress for ID " << downloadId << ": " << progress.progress << "% completed." << std::endl;
+    std::cout << "Download progress for ID " << downloadId << ": " << static_cast<int>(percent) << "% completed." << std::endl;
 }
 void DownloadMgrControl::handleDeleteInstallerFileRequest()
 {
-    assert(dwldCtl != nullptr && "IPackageDownloader interface is not initialized.");
+    assert(dwldCtl != nullptr && "IDownloadManager interface is not initialized.");
 
     std::string downloadId = retrieveInputFromUser<std::string>("Enter File to be deleted: ", false, "");
     uint32_t result = dwldCtl->Delete(downloadId);
@@ -180,9 +181,9 @@ void DownloadMgrControl::handleDeleteInstallerFileRequest()
 }
 void DownloadMgrControl::handleGetStorageDetailsRequest()
 {
-    assert(dwldCtl != nullptr && "IPackageDownloader interface is not initialized.");
+    assert(dwldCtl != nullptr && "IDownloadManager interface is not initialized.");
 
-    std::string quotaKb, usedKb;
+    uint32_t  quotaKb, usedKb;
     uint32_t result = dwldCtl->GetStorageDetails(quotaKb, usedKb);
     if (result != Core::ERROR_NONE)
     {
@@ -191,11 +192,11 @@ void DownloadMgrControl::handleGetStorageDetailsRequest()
     }
     std::cout << "Storage Details: Total - " << quotaKb
               << " bytes, Used - " << usedKb
-              << " bytes, Free - " << (std::stoll(quotaKb) - std::stoll(usedKb)) << " bytes." << std::endl;
+              << " bytes, Free - " << (quotaKb - usedKb) << " bytes." << std::endl;
 }
 void DownloadMgrControl::handleSetRateLimitRequest()
 {
-    assert(dwldCtl != nullptr && "IPackageDownloader interface is not initialized.");
+    assert(dwldCtl != nullptr && "IDownloadManager interface is not initialized.");
 
     std::string downloadId = retrieveInputFromUser<std::string>("Enter Download ID to set rate limit: ", false, "");
     uint32_t rateLimit = retrieveInputFromUser<uint32_t>("Enter rate limit (bytes per second): ", false, 0);
