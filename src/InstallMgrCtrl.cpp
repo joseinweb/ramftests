@@ -39,7 +39,7 @@ void InstallMgrCtrl::displayMenu()
 {
     while (true)
     {
-        std::cout<<"------------------------------------------------------------"<< std::endl;
+        std::cout << "------------------------------------------------------------" << std::endl;
         std::cout << "Install Manager Control Menu:" << std::endl;
         std::cout << "1. Install Package" << std::endl;
         std::cout << "2. Uninstall Package" << std::endl;
@@ -50,7 +50,7 @@ void InstallMgrCtrl::displayMenu()
         std::cout << "0. Return to Main Menu" << std::endl;
 
         int choice = retrieveInputFromUser<int>("Enter your choice: ", false, 0);
-        std::cout<<"------------------------------------------------------------"<< std::endl;
+        std::cout << "------------------------------------------------------------" << std::endl;
 
         switch (choice)
         {
@@ -85,22 +85,33 @@ void InstallMgrCtrl::handleStartInstallRequest()
 {
     assert(instlCtl != nullptr && "IPackageInstaller interface is not initialized.");
 
-    std::string packageId = retrieveInputFromUser<std::string>("Enter the package Id to install: ", false, "");
-    std::string version = retrieveInputFromUser<std::string>("Enter the package version to install : ", false, "");
     std::string fileLocator = retrieveInputFromUser<std::string>("Enter the file locator : ", false, "");
-    bool metadataFlag = retrieveInputFromUser<bool>("Include metadata? (1 for yes, 0 for no): ", false, false);
+    // Collect additional information for installation as needed
+    std::string packageId, version;
 
-    while (metadataFlag)
+    Exchange::RuntimeConfig rtConfig;
+
+    uint32_t result = instlCtl->GetConfigForPackage(fileLocator, packageId, version, rtConfig);
+
+    if (result != Core::ERROR_NONE)
     {
-        std::string key = retrieveInputFromUser<std::string>("Enter metadata key: ", false, "");
-        std::string value = retrieveInputFromUser<std::string>("Enter metadata value: ", false, "");
-        // Add the key-value pair to the metadata map or structure
-        // metadata[key] = value;
-        //TODO: Implement metadata handling
-
-        metadataFlag = retrieveInputFromUser<bool>("Add more metadata? (1 for yes, 0 for no): ", false, false);
+        std::cout << "Failed to get package configuration. Cannot proceed with installation." << std::endl;
+        return;
     }
+
     // Proceed with the installation using the collected information
+    Exchange::IPackageInstaller::IKeyValueIterator *additionalMetadata = nullptr;
+    Exchange::IPackageInstaller::FailReason failReason = Exchange::IPackageInstaller::FailReason::NONE;
+    // IPackageInstaller methods can be called here using the collected information
+    result = instlCtl->Install(packageId, version, additionalMetadata, fileLocator, failReason);
+    if (result == Core::ERROR_NONE)
+    {
+        std::cout << "Installation started successfully." << std::endl;
+    }
+    else
+    {
+        std::cout << "Failed to start installation. Reason: " << static_cast<int>(failReason) << std::endl;
+    }
 }
 void InstallMgrCtrl::handleUninstallRequest()
 {
@@ -135,8 +146,8 @@ void InstallMgrCtrl::handleListPackagesRequest()
         Exchange::IPackageInstaller::Package pkg;
         while (packageItr->Next(pkg))
         {
-            std::cout << "- " << pkg.packageId << " , Version: " << pkg.version 
-                      << ", State " << pkg.state << ", Digest " << pkg.digest << ", sizeKB: " << pkg.sizeKb << std::endl;
+            std::cout << "- " << pkg.packageId << " , Version: " << pkg.version
+                      << ", State " << static_cast<int>(pkg.state) << ", Digest " << pkg.digest << ", sizeKB: " << pkg.sizeKb << std::endl;
         }
         packageItr->Release();
     }
@@ -178,7 +189,7 @@ void InstallMgrCtrl::handlePackageMetadataRequest()
     if (result == Core::ERROR_NONE)
     {
         std::cout << "Package Metadata retrieved successfully." << std::endl;
-        //TODO: Display or process the metadata as needed
+        // TODO: Display or process the metadata as needed
     }
     else
     {
@@ -200,7 +211,7 @@ void InstallMgrCtrl::handlePackageConfigurationRequest()
     if (result == Core::ERROR_NONE)
     {
         std::cout << "Package Configuration retrieved successfully." << std::endl;
-        //TODO: Display or process the configuration as needed
+        // TODO: Display or process the configuration as needed
     }
     else
     {
