@@ -143,4 +143,6 @@ public:
     bool initialize(Core::ProxyType<RPC::CommunicatorClient> &client) override;
     bool checkPluginStatus() override;
     void displayMenu() override;
+
+     Exchange::IAppManager *getAppManager() { return appManager; }
 };
