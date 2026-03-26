@@ -20,6 +20,7 @@ private:
     void checkStatus();
     void showAppManagerMenu();
     void showPackageManagerMenu();
+    void showRDKWindowMgrCtrlMenu();
     void performCatalogRetrieval();
     void showPerformanceTests();
     

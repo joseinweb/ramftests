@@ -6,45 +6,72 @@
 #include "PkgMgrControl.hpp"
 #include "DownloadMgrCtrl.hpp"
 #include "InstallMgrCtrl.hpp"
+#include "RDKWindowMgrCtrl.hpp"
 
-class AppManagerFactory : public ManagerFactory {
+class AppManagerFactory : public ManagerFactory
+{
 public:
-    std::unique_ptr<MgrCtrl> createManager(ThunderBridge& thunderBridge) override {
+    std::unique_ptr<MgrCtrl> createManager(ThunderBridge &thunderBridge) override
+    {
         auto manager = std::make_unique<AppMgrControl>();
-        if (thunderBridge.initializeManager(*manager)) {
+        if (thunderBridge.initializeManager(*manager))
+        {
             return manager;
         }
         return nullptr;
     }
 };
 
-class PkgManagerFactory : public ManagerFactory {
+class PkgManagerFactory : public ManagerFactory
+{
 public:
-    std::unique_ptr<MgrCtrl> createManager(ThunderBridge& thunderBridge) override {
+    std::unique_ptr<MgrCtrl> createManager(ThunderBridge &thunderBridge) override
+    {
         auto manager = std::make_unique<PkgMgrControl>();
-        if (thunderBridge.initializeManager(*manager)) {
+        if (thunderBridge.initializeManager(*manager))
+        {
             return manager;
         }
         return nullptr;
     }
 };
 
-class DownloadManagerFactory : public ManagerFactory {
+class DownloadManagerFactory : public ManagerFactory
+{
 public:
-    std::unique_ptr<MgrCtrl> createManager(ThunderBridge& thunderBridge) override {
+    std::unique_ptr<MgrCtrl> createManager(ThunderBridge &thunderBridge) override
+    {
         auto manager = std::make_unique<DownloadMgrControl>();
-        if (thunderBridge.initializeManager(*manager)) {
+        if (thunderBridge.initializeManager(*manager))
+        {
             return manager;
         }
         return nullptr;
     }
 };
 
-class InstallManagerFactory : public ManagerFactory {
+class InstallManagerFactory : public ManagerFactory
+{
 public:
-    std::unique_ptr<MgrCtrl> createManager(ThunderBridge& thunderBridge) override {
+    std::unique_ptr<MgrCtrl> createManager(ThunderBridge &thunderBridge) override
+    {
         auto manager = std::make_unique<InstallMgrCtrl>();
-        if (thunderBridge.initializeManager(*manager)) {
+        if (thunderBridge.initializeManager(*manager))
+        {
+            return manager;
+        }
+        return nullptr;
+    }
+};
+
+class RDKWindowMgrCtrlFactory : public ManagerFactory
+{
+public:
+    std::unique_ptr<MgrCtrl> createManager(ThunderBridge &thunderBridge) override
+    {
+        auto manager = std::make_unique<RDKWindowMgrCtrl>();
+        if (thunderBridge.initializeManager(*manager))
+        {
             return manager;
         }
         return nullptr;
