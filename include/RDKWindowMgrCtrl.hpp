@@ -117,4 +117,6 @@ private:
     void handleSetFocusRequest();
     void handleGetVisibilityRequest();
     void handleGetScreenshotRequest();
+    void handleKeyInjectionRequest();
+    void handleKeyRequest();
 };
