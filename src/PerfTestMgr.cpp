@@ -15,7 +15,7 @@ PerfTestMgr::~PerfTestMgr()
     }
 }
 
-bool PerfTestMgr::initialize(ManagerRegistry* registry)
+bool PerfTestMgr::initialize(ManagerRegistry *registry)
 {
     m_managerRegistry = registry;
     return true;
@@ -37,7 +37,7 @@ void PerfTestMgr::displayMenu()
     }
 }
 
-void PerfTestMgr::createMenu(Menu& menu)
+void PerfTestMgr::createMenu(Menu &menu)
 {
     menu.addOption("App Lifecycle Test", [this]()
                    { this->handleAppLifeCycleRequest(); });
@@ -46,7 +46,8 @@ void PerfTestMgr::createMenu(Menu& menu)
 
 void PerfTestMgr::handleAppLifeCycleRequest()
 {
-    if (!m_managerRegistry) {
+    if (!m_managerRegistry)
+    {
         std::cerr << "PerfTestMgr is not initialized." << std::endl;
         return;
     }
@@ -58,7 +59,7 @@ void PerfTestMgr::handleAppLifeCycleRequest()
     int delayIns = retrieveInputFromUser<int>("Enter delay between iterations (seconds): ", true, 5);
     std::cout << "Launching application " << appId << " for " << iterations << " iterations." << std::endl;
     m_perfTestThread = std::thread([this, appId, iterations, delayIns]()
-                                    {
+                                   {
                                         bool result = handleAppLaunchTestRequest(appId, iterations, delayIns * 1000);
                                         if (!result)
                                         {
@@ -70,7 +71,8 @@ void PerfTestMgr::handleAppLifeCycleRequest()
 
 bool PerfTestMgr::handleAppLaunchTestRequest(const std::string &appId, int iterations, int delayBetweenIterationsMs)
 {
-    if (!m_managerRegistry) {
+    if (!m_managerRegistry)
+    {
         std::cerr << "PerfTestMgr is not initialized." << std::endl;
         return false;
     }
@@ -83,10 +85,33 @@ bool PerfTestMgr::handleAppLaunchTestRequest(const std::string &appId, int itera
         return false;
     }
     Exchange::IAppManager *appManager = appMgrCtrl->getAppManager();
+    using ILoadedAppInfoIterator = Exchange::IAppManager::ILoadedAppInfoIterator;
+    auto getAppState = [&appManager](const std::string &appId) -> Exchange::IAppManager::AppLifecycleState
+    {
+        ILoadedAppInfoIterator *iterator = nullptr;
+        Exchange::IAppManager::AppLifecycleState appState = Exchange::IAppManager::APP_STATE_UNKNOWN;
+        if (appManager->GetLoadedApps(iterator) != Core::ERROR_NONE)
+        {
+            std::cerr << "Failed to get app state for " << appId << std::endl;
+            return appState;
+        }
 
+        Exchange::IAppManager::LoadedAppInfo appInfo;
+        while (iterator->Next(appInfo))
+        {
+            if (appInfo.appId == appId)
+            {
+                appState = appInfo.lifecycleState;
+                break;
+            }
+        }
+        iterator->Release();
+        return appState;
+    };
     for (int i = 0; i < iterations; ++i)
     {
-        if(m_stopPerfTest) {
+        if (m_stopPerfTest)
+        {
             std::cout << "Performance test stopped." << std::endl;
             break;
         }
@@ -95,18 +120,42 @@ bool PerfTestMgr::handleAppLaunchTestRequest(const std::string &appId, int itera
         if (result != Core::ERROR_NONE)
         {
             std::cerr << "Iteration " << (i + 1) << ": Failed to launch application: " << appId << std::endl;
-            continue;
+            break;
         }
+        std::cout << "Launched. Waiting for " << delayBetweenIterationsMs << " milliseconds." << std::endl;
         std::this_thread::sleep_for(std::chrono::milliseconds(delayBetweenIterationsMs));
-        std::cout << "Iteration " << (i + 1) << ": App " << appId << " launched successfully." << std::endl;
-        // Now let us Terminate the app
-        result = appManager->TerminateApp(appId);
-        if (result != Core::ERROR_NONE)
+        std::cout << "Checking app state for " << appId << std::endl;
+        Exchange::IAppManager::AppLifecycleState state = getAppState(appId);
+        if (state == Exchange::IAppManager::APP_STATE_ACTIVE)
         {
-            std::cerr << "Iteration " << (i + 1) << ": Failed to terminate application: " << appId << std::endl;
-            continue;
+
+            std::cout << "Iteration " << (i + 1) << ": App " << appId << " launched successfully." << std::endl;
+            // Now let us Terminate the app
+            result = appManager->TerminateApp(appId);
+            if (result != Core::ERROR_NONE)
+            {
+                std::cerr << "Iteration " << (i + 1) << ": Failed to terminate application: " << appId << std::endl;
+                break;
+            }
+            std::cout << "Iteration " << (i + 1) << ": App " << appId << " termination requested. Waiting for " << delayBetweenIterationsMs << " milliseconds." << std::endl;
+            std::this_thread::sleep_for(std::chrono::milliseconds(delayBetweenIterationsMs));
+            std::cout << "Checking app state for " << appId << std::endl;
+            state = getAppState(appId);
+            if (state != Exchange::IAppManager::APP_STATE_UNKNOWN)
+            {
+                std::cerr << "Iteration " << (i + 1) << ": Failed to terminate application: " << appId << ", state: " << state << std::endl;
+                break;
+            }
+            else
+            {
+                std::cout << "Iteration " << (i + 1) << ": App " << appId << " terminated successfully." << std::endl;
+            }
         }
-        std::cout << "Iteration " << (i + 1) << ": App " << appId << " terminated successfully." << std::endl;
+        else
+        {
+            std::cerr << "Iteration " << (i + 1) << ": App " << appId << " did not launch successfully. Current state: " << state << std::endl;
+            break;
+        }
     }
     return true;
 }

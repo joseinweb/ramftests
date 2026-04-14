@@ -106,18 +106,12 @@ void Application::showRDKWindowMgrCtrlMenu()
 
 void Application::showPackageManagerMenu()
 {
-    bool stayInMenu = true;
-    while (stayInMenu)
+    while (true)
     {
         packageManagerMenu.display();
-        int choice = retrieveInputFromUser<int>("Enter your choice: ", false, 0);
-        if (choice == 0)
+        if(packageManagerMenu.handleInput())
         {
-            stayInMenu = false;
-        }
-        else
-        {
-            packageManagerMenu.handleInput();
+            break;
         }
     }
 }
