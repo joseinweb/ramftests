@@ -52,6 +52,15 @@ void PerfTestMgr::handleAppLifeCycleRequest()
         return;
     }
 
+    // Stop and join any previously running performance test thread
+    if (m_perfTestThread.joinable())
+    {
+        std::cout << "Waiting for previous performance test to complete..." << std::endl;
+        m_stopPerfTest = true;
+        m_perfTestThread.join();
+        m_stopPerfTest = false;
+    }
+
     // Implementation for App Launch Test
     // Implementation for handling app lifecycle requests
     std::string appId = retrieveInputFromUser<std::string>("Enter Application ID: ", false, "");
