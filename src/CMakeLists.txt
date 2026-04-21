@@ -1,11 +1,18 @@
-set (TARGET "ramtestapp")
+project("ramfapp")
+
+set (TARGET "ramfapp")
 add_executable(${TARGET} main.cpp 
-    AppMgrControl.cpp 
+    Application.cpp
+    Menu.cpp
+    PerfTestMgr.cpp
     ThunderBridge.cpp
-    PkgMgrControl.cpp  
-    DownloadMgrCtrl.cpp
-    InstallMgrCtrl.cpp
-    CatalogManager.cpp
+    ManagerRegistry.cpp
+    managers/AppMgrControl.cpp 
+    managers/PkgMgrControl.cpp  
+    managers/DownloadMgrCtrl.cpp
+    managers/InstallMgrCtrl.cpp
+    managers/CatalogManager.cpp
+    managers/RDKWindowMgrCtrl.cpp
     )
 
 find_package(PkgConfig REQUIRED)
@@ -14,7 +21,6 @@ pkg_check_modules(WPEFRAMEWORKCORE REQUIRED WPEFrameworkCore)
 pkg_check_modules(WPEFRAMEWORKPLUGINS REQUIRED WPEFrameworkPlugins)
 pkg_check_modules(WPEFRAMEWORKWEBSOCKET REQUIRED WPEFrameworkWebSocket)
 pkg_check_modules(WPEFRAMEWORKDEFINITIONS REQUIRED WPEFrameworkDefinitions)
-pkg_check_modules(WPEFRAMEWORKPLUGINS REQUIRED WPEFrameworkPlugins)
 
 
 set(COMMON_INCLUDE_DIRS
@@ -23,7 +29,6 @@ set(COMMON_INCLUDE_DIRS
     ${WPEFRAMEWORKPLUGINS_INCLUDE_DIRS}
     ${WPEFRAMEWORKWEBSOCKET_INCLUDE_DIRS}
     ${WPEFRAMEWORKDEFINITIONS_INCLUDE_DIRS}
-    ${WPEFRAMEWORKPLUGINS_INCLUDE_DIRS}
     ../include
     )
 
@@ -32,7 +37,6 @@ set(COMMON_LIBRARIES
     ${WPEFRAMEWORKPLUGINS_LIBRARIES}
     ${WPEFRAMEWORKWEBSOCKET_LIBRARIES}
     ${WPEFRAMEWORKDEFINITIONS_LIBRARIES}
-    ${WPEFRAMEWORKPLUGINS_LIBRARIES}
     jsoncpp
     curl
     )
